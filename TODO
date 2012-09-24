@@ -1,7 +1,7 @@
 + DONE FIXBUG Error when deleting task
-- TODO Replace 'delete' task with 'done' button 
-- TODO Show done tasks in the bottom, muted 
-- TODO Receipt management
-- TODO To-buy section
++ DONE NEW Replace 'delete' task with 'done' button 
++ DONE NEW Show done tasks in the bottom, muted 
+- TODO NEW Receipt management
+- TODO NEW To-buy section
 >>> v2
 

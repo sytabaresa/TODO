@@ -11,6 +11,12 @@ indexes:
 # your application using appcfg.py.
 
 - kind: Task
+  properties:
+  - name: done
+  - name: date
+    direction: desc
+
+- kind: Task
   ancestor: yes
   properties:
   - name: date

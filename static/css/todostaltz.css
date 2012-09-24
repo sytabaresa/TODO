@@ -5,3 +5,7 @@ body {
 .no-style-form {
     margin:0;
 }
+
+td.right-column {
+	text-align: right;
+}
