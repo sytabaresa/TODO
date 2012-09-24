@@ -1,4 +1,4 @@
-- TODO FIXBUG Error when deleting task
++ DONE FIXBUG Error when deleting task
 - TODO Replace 'delete' task with 'done' button 
 - TODO Show done tasks in the bottom, muted 
 - TODO Receipt management
