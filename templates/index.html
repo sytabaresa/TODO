@@ -64,7 +64,7 @@
                 {{ task.text }}
               </td>
               <td class="muted right-column">
-                Done {% if task.datedone %}{{ task.getDateDone() }}{% endif %}
+                Done {% if task.datedone %}{{ task.formattedDateDone() }}{% endif %}
               </td>
             </tr>
           {% endfor %}
@@ -72,24 +72,43 @@
       </div>
 
       <div class="tab-pane" id="receiptscontainer">
-        <form action="/receipt" method="post">
+        <form action="/insertReceipt" method="POST">
           <div class="input-append">
-            <input class="span2" size="16" placeholder="0.00" name="receiptval" type="text">
+            <input class="span2" size="16" placeholder="0.00" name="receiptmoney" type="text">
             <span class="add-on">€</span>
           </div>
           <input class="span6" size="16" placeholder="Description" name="receiptdescription" type="text">
           <br />
           <label class="radio">
-            <input type="radio" name="optionsRadios" id="visaRadio" value="visa" checked>
+            <input type="radio" name="receiptmethod" id="visaRadio" value="Visa" checked>
             Visa
           </label>
           <label class="radio">
-            <input type="radio" name="optionsRadios" id="cashRadio" value="cash">
+            <input type="radio" name="receiptmethod" id="cashRadio" value="Cash">
             Cash
           </label>
           <br />
           <button class="btn btn-primary" type="submit" type="button">Save</button>
         </form>
+        <hr>
+        <table class="table table-striped">
+          {% for receipt in receipts %}
+            <tr>
+              <td>
+                <strong>{{ receipt.money }} &#8364;</strong>
+              </td>
+              <td>
+                {{ receipt.description }}
+              </td>
+              <td>
+                {{ receipt.method }}
+              </td>
+              <td>
+                {{ receipt.formattedDate() }}
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
       </div>
 
       <div class="tab-pane" id="tobuycontainer">

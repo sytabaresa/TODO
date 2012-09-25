@@ -9,6 +9,9 @@ import datetime
 jinja_environment = jinja2.Environment(
 	loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
+def myFormatDate(date):
+	return date.strftime('%d.%m.%Y')
+
 class Task(db.Model):
 	"""Something to do"""
 	text = db.StringProperty()
@@ -16,8 +19,18 @@ class Task(db.Model):
 	datedone = db.DateProperty()
 	done = db.BooleanProperty(default=False)
 
-	def getDateDone(self):
-		return self.datedone.strftime('%d.%m.%Y')
+	def formattedDateDone(self):
+		return myFormatDate(self.datedone)
+
+class Receipt(db.Model):
+	"""Record of something I bought"""
+	money = db.FloatProperty()
+	date = db.DateTimeProperty(auto_now_add=True)
+	description = db.StringProperty()
+	method = db.CategoryProperty()
+
+	def formattedDate(self):
+		return myFormatDate(self.date)
 
 class MainPage(webapp.RequestHandler):
 	def get(self):
@@ -29,16 +42,20 @@ class MainPage(webapp.RequestHandler):
 		                   "FROM Task "
 		                   "WHERE done = TRUE "
 		                   "ORDER BY date DESC LIMIT 4")
+		receipts = db.GqlQuery("SELECT * "
+		                       "FROM Receipt "
+		                       "ORDER BY date DESC")
 
 		template_values = {
 		   'tasks': tasks,
 		   'done': done,
+		   'receipts': receipts,
 		}
 
 		template = jinja_environment.get_template('templates/index.html')
 		self.response.out.write(template.render(template_values))
 
-class Inserter(webapp.RequestHandler):
+class TaskInserter(webapp.RequestHandler):
 	def post(self):
 		task = Task()
 		task.text = self.request.get('tasktext')
@@ -55,10 +72,20 @@ class DoneHandler(webapp.RequestHandler):
 		task.put()
 		self.redirect('/')
 
+class ReceiptInserter(webapp.RequestHandler):
+	def post(self):
+		receipt = Receipt()
+		receipt.money = float(self.request.get('receiptmoney'))
+		receipt.description = self.request.get('receiptdescription')
+		receipt.method = self.request.get('receiptmethod')
+		receipt.put()
+		self.redirect('/')
+
 app = webapp.WSGIApplication([
 	('/', MainPage),
-	('/insertTask', Inserter),
+	('/insertTask', TaskInserter),
 	('/doneTask', DoneHandler),
+	('/insertReceipt', ReceiptInserter),
 	],
 	debug=True)
 
