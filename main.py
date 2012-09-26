@@ -45,11 +45,16 @@ class MainPage(webapp.RequestHandler):
 		receipts = db.GqlQuery("SELECT * "
 		                       "FROM Receipt "
 		                       "ORDER BY date DESC")
+		activetab = self.request.get('activetab')
+		if not activetab:
+			activetab = 'todo'
+		logging.info('activetab %s'%activetab)
 
 		template_values = {
 		   'tasks': tasks,
 		   'done': done,
 		   'receipts': receipts,
+		   'activetab': activetab
 		}
 
 		template = jinja_environment.get_template('templates/index.html')
@@ -79,7 +84,7 @@ class ReceiptInserter(webapp.RequestHandler):
 		receipt.description = self.request.get('receiptdescription')
 		receipt.method = self.request.get('receiptmethod')
 		receipt.put()
-		self.redirect('/')
+		self.redirect('/?activetab=receipts')
 
 app = webapp.WSGIApplication([
 	('/', MainPage),
