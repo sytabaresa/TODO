@@ -17,6 +17,13 @@ indexes:
     direction: desc
 
 - kind: Task
+  properties:
+  - name: done
+  - name: date
+    direction: desc
+  - name: text
+
+- kind: Task
   ancestor: yes
   properties:
   - name: date

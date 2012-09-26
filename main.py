@@ -78,16 +78,16 @@ class TaskInserter(webapp.RequestHandler):
 
 class Eversticky(webapp.RequestHandler):
 	def get(self):
+		self.response.headers['Content-Type'] = 'text/plain'
 		tasks = db.GqlQuery("SELECT * "
 		         "FROM Task "
 		         "WHERE done = FALSE "
 		         "ORDER BY date DESC")
 		logging.info('tasks %s'%tasks)
+		lines = []
 		for task in tasks:
-			logging.info('t %s'%task)
-			logging.info('t.text %s'%task.text)
-			self.response.out.write(task.text)
-			self.response.out.write('<br />')
+			lines.append(task.text)
+		self.response.out.write('\n'.join(lines))
 
 class DoneHandler(webapp.RequestHandler):
 	def post(self):
