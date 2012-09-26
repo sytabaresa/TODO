@@ -9,3 +9,7 @@ body {
 td.right-column {
 	text-align: right;
 }
+
+img.receipt-method-icon {
+    width: 20px;
+}

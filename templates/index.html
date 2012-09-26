@@ -96,15 +96,23 @@
             <tr>
               <td>
                 <strong>{{ receipt.money }} &#8364;</strong>
+                {% if receipt.method == 'Visa' %}
+                <img src="/static/img/visa.png" class="receipt-method-icon" />
+                {% elif receipt.method == 'Cash' %}
+                <img src="/static/img/cash.png" class="receipt-method-icon" />
+                {% endif %}
               </td>
               <td>
                 {{ receipt.description }}
               </td>
               <td>
-                {{ receipt.method }}
-              </td>
-              <td>
                 {{ receipt.formattedDate() }}
+              </td>
+              <td class="right-column">
+                <form class="no-style-form" action="/deleteReceipt" method="POST">
+                  <button class="btn" type="submit"><i class="icon-remove"></i></button>
+                  <input type="hidden" name="receiptid" value="{{ receipt.key().id() }}">
+                </form>
               </td>
             </tr>
           {% endfor %}
@@ -127,6 +135,12 @@
               {% else %}
               {{ wish.description }}
               {% endif %}
+            </td>
+            <td class="right-column">
+              <form class="no-style-form" action="/deleteWish" method="POST">
+                <button class="btn" type="submit"><i class="icon-remove"></i></button>
+                <input type="hidden" name="wishid" value="{{ wish.key().id() }}">
+              </form>
             </td>
           </tr>
           {% endfor %}

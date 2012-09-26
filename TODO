@@ -4,7 +4,8 @@
 + DONE NEW Receipt management
 + DONE IMPROVE Main page can land on any given tab
 + DONE NEW To-buy section
-- TODO IMPROVE Delete button for receipts and tobuy
++ DONE IMPROVE Delete button for receipts and tobuy
++ DONE IMPROVE Cash/Visa icons
 >>> v2
 
 - TODO IMPROVE URL reference of wish is validated ('http://' necessary)

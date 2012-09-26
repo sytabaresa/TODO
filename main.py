@@ -82,7 +82,6 @@ class DoneHandler(webapp.RequestHandler):
 		task = Task.get_by_id(taskid)
 		task.done = True
 		task.datedone = datetime.date.today()
-		logging.info(task.getDateDone())
 		task.put()
 		self.redirect('/')
 
@@ -95,6 +94,13 @@ class ReceiptInserter(webapp.RequestHandler):
 		receipt.put()
 		self.redirect('/?activetab=receipts')
 
+class ReceiptDeleter(webapp.RequestHandler):
+	def post(self):
+		receiptid = int(self.request.get('receiptid'))
+		receipt = Receipt.get_by_id(receiptid)
+		receipt.delete()
+		self.redirect('/?activetab=receipts')
+
 class WishInserter(webapp.RequestHandler):
 	def post(self):
 		wish = Wish()
@@ -105,12 +111,21 @@ class WishInserter(webapp.RequestHandler):
 		wish.put()
 		self.redirect('/?activetab=tobuy')
 
+class WishDeleter(webapp.RequestHandler):
+	def post(self):
+		wishid = int(self.request.get('wishid'))
+		wish = Wish.get_by_id(wishid)
+		wish.delete()
+		self.redirect('/?activetab=tobuy')
+
 app = webapp.WSGIApplication([
 	('/', MainPage),
 	('/insertTask', TaskInserter),
 	('/doneTask', DoneHandler),
 	('/insertReceipt', ReceiptInserter),
+	('/deleteReceipt', ReceiptDeleter),
 	('/insertWish', WishInserter),
+	('/deleteWish', WishDeleter),
 	],
 	debug=True)
 
