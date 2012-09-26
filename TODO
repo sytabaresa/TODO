@@ -3,6 +3,9 @@
 + DONE NEW Show done tasks in the bottom, muted 
 + DONE NEW Receipt management
 + DONE IMPROVE Main page can land on any given tab
-- TODO NEW To-buy section
++ DONE NEW To-buy section
+- TODO IMPROVE Delete button for receipts and tobuy
 >>> v2
+
+- TODO IMPROVE URL reference of wish is validated ('http://' necessary)
 

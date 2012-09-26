@@ -32,6 +32,11 @@ class Receipt(db.Model):
 	def formattedDate(self):
 		return myFormatDate(self.date)
 
+class Wish(db.Model):
+	"""Something I should buy"""
+	description = db.StringProperty()
+	reference = db.StringProperty()
+
 class MainPage(webapp.RequestHandler):
 	def get(self):
 		tasks = db.GqlQuery("SELECT * "
@@ -45,16 +50,20 @@ class MainPage(webapp.RequestHandler):
 		receipts = db.GqlQuery("SELECT * "
 		                       "FROM Receipt "
 		                       "ORDER BY date DESC")
+		wishes = db.GqlQuery("SELECT * "
+		                     "FROM Wish")
+
 		activetab = self.request.get('activetab')
 		if not activetab:
 			activetab = 'todo'
-		logging.info('activetab %s'%activetab)
+		#logging.info('activetab %s'%activetab)
 
 		template_values = {
 		   'tasks': tasks,
 		   'done': done,
 		   'receipts': receipts,
-		   'activetab': activetab
+		   'wishes': wishes,
+		   'activetab': activetab,
 		}
 
 		template = jinja_environment.get_template('templates/index.html')
@@ -86,11 +95,22 @@ class ReceiptInserter(webapp.RequestHandler):
 		receipt.put()
 		self.redirect('/?activetab=receipts')
 
+class WishInserter(webapp.RequestHandler):
+	def post(self):
+		wish = Wish()
+		wish.description = self.request.get('wishdescription')
+		wishref = self.request.get('wishreference')
+		if wishref:
+			wish.reference = wishref
+		wish.put()
+		self.redirect('/?activetab=tobuy')
+
 app = webapp.WSGIApplication([
 	('/', MainPage),
 	('/insertTask', TaskInserter),
 	('/doneTask', DoneHandler),
 	('/insertReceipt', ReceiptInserter),
+	('/insertWish', WishInserter),
 	],
 	debug=True)
 
