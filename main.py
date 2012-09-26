@@ -40,9 +40,9 @@ class Wish(db.Model):
 class MainPage(webapp.RequestHandler):
 	def get(self):
 		tasks = db.GqlQuery("SELECT * "
-		            "FROM Task "
-		            "WHERE done = FALSE "
-		            "ORDER BY date DESC")
+		                    "FROM Task "
+		                    "WHERE done = FALSE "
+		                    "ORDER BY date DESC")
 		done = db.GqlQuery("SELECT * "
 		                   "FROM Task "
 		                   "WHERE done = TRUE "
@@ -59,11 +59,11 @@ class MainPage(webapp.RequestHandler):
 		#logging.info('activetab %s'%activetab)
 
 		template_values = {
-		   'tasks': tasks,
-		   'done': done,
-		   'receipts': receipts,
-		   'wishes': wishes,
-		   'activetab': activetab,
+		'tasks': tasks,
+		'done': done,
+		'receipts': receipts,
+		'wishes': wishes,
+		'activetab': activetab,
 		}
 
 		template = jinja_environment.get_template('templates/index.html')
@@ -75,6 +75,19 @@ class TaskInserter(webapp.RequestHandler):
 		task.text = self.request.get('tasktext')
 		task.put()
 		self.redirect('/')
+
+class Eversticky(webapp.RequestHandler):
+	def get(self):
+		tasks = db.GqlQuery("SELECT * "
+		         "FROM Task "
+		         "WHERE done = FALSE "
+		         "ORDER BY date DESC")
+		logging.info('tasks %s'%tasks)
+		for task in tasks:
+			logging.info('t %s'%task)
+			logging.info('t.text %s'%task.text)
+			self.response.out.write(task.text)
+			self.response.out.write('<br />')
 
 class DoneHandler(webapp.RequestHandler):
 	def post(self):
@@ -126,6 +139,7 @@ app = webapp.WSGIApplication([
 	('/deleteReceipt', ReceiptDeleter),
 	('/insertWish', WishInserter),
 	('/deleteWish', WishDeleter),
+	('/eversticky', Eversticky),
 	],
 	debug=True)
 
