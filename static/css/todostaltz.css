@@ -10,6 +10,10 @@ td.right-column {
 	text-align: right;
 }
 
+td.receipt-value-col {
+    white-space: nowrap;
+}
+
 img.receipt-method-icon {
     width: 20px;
 }

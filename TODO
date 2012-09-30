@@ -9,8 +9,8 @@
 >>> v2
 
 + DONE NEW Support for Eversticky widget
++ DONE IMPROVE Good layout of receipts for mobile
 - TODO NEW Urgent flag for tasks
-- TODO IMPROVE Good layout of receipts for mobile
 - TODO NEW Receipts becomes finances, handles both income (+) and outcome (-)
 - TODO NEW "Buy" button on to buy page takes to finances page form
 - TODO NEW Task reminders by email
