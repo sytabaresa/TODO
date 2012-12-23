@@ -55,7 +55,7 @@ td#dial2, td#dial5, td#dial8 {
 	width: 34%;
 }
 
-table#dialer td a {
+table#dialer td span, table#dialer td a {
 	width: 100%;
 	height: 40px;
 	line-height: 33px;

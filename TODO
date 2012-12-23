@@ -12,6 +12,8 @@
 + DONE IMPROVE Good layout of receipts for mobile
 + DONE NEW Number dialer for finances page
 - TODO NEW Receipts becomes finances, handles both income (+) and outcome (-)
+- TODO NEW Categories in finance
+- TODO IMPROVE Cooler radio buttons for visa/cash with icon
 - TODO NEW Urgent flag for tasks
 - TODO NEW Task reminders by email
 - TODO IMPROVE URL reference of wish is validated ('http://' necessary)
