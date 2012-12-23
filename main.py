@@ -55,7 +55,7 @@ class MainPage(webapp.RequestHandler):
 
 		activetab = self.request.get('activetab')
 		if not activetab:
-			activetab = 'todo'
+			activetab = 'receipts'
 		#logging.info('activetab %s'%activetab)
 
 		template_values = {
