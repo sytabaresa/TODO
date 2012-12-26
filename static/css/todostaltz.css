@@ -68,8 +68,23 @@ span#euro-label {
 	z-index: 4;
 }
 
+#bill-method {
+	width: 100%;
+}
+#bill-visa {
+	width: 50%;
+}
+#bill-cash {
+	width: 50%;
+}
+
 input#bill-description {
 	margin-top: 10px;
+	width: 100%;
+	height: 28px;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;
 }
 
 .input-append {
