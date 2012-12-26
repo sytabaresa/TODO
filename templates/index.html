@@ -36,38 +36,41 @@
     <div class="tab-content" style="padding-bottom:100px">
 
       {# ------------- Bills -------------- #}
-      <div class="tab-pane{% if activetab == 'bills' %} active{% endif %}" id="bills-container">
+      <div class="tab-pane{% if activetab == 'bills' %} active{% endif %}" id="billscontainer">
         <form action="/insertBill" method="POST">
-          <div class="input-append input-prepend">
-	          <div id="minus-plus" class="btn-group" data-toggle="buttons-radio">
-	            <button id="bill-minus" type="button" name="minus" class="btn btn-warning add-on active">-</button>
-	            <button id="bill-plus" type="button" name="plus" class="btn btn-success add-on">+</button>
+
+					<div class="well">
+	          <div class="input-append input-prepend">
+		          <div id="minus-plus" class="btn-group" data-toggle="buttons-radio">
+		            <button id="bill-minus" type="button" name="minus" class="btn btn-warning add-on active">-</button>
+		            <button id="bill-plus" type="button" name="plus" class="btn btn-success add-on">+</button>
+		          </div>
+	            <input id="bill-input" size="18" placeholder="0.00" name="bill-money" type="text">
+	            <span id="euro-label" class="add-on">€</span>
 	          </div>
-            <input id="bill-input" size="18" placeholder="0.00" name="bill-money" type="text">
-            <span id="euro-label" class="add-on">€</span>
-          </div>
-	        <table id="dialer">
-		        <tr>
-			        <td id="dial1"><span class="btn" href="#">1</span></td>
-			        <td id="dial2"><span class="btn" href="#">2</span></td>
-			        <td id="dial3"><span class="btn" href="#">3</span></td>
-		        </tr>
-		        <tr>
-			        <td id="dial4"><span class="btn" href="#">4</span></td>
-			        <td id="dial5"><span class="btn" href="#">5</span></td>
-			        <td id="dial6"><span class="btn" href="#">6</span></td>
-		        </tr>
-		        <tr>
-			        <td id="dial7"><span class="btn" href="#">7</span></td>
-			        <td id="dial8"><span class="btn" href="#">8</span></td>
-			        <td id="dial9"><span class="btn" href="#">9</span></td>
-		        </tr>
-		        <tr>
-			        <td id="dialdot"><span class="btn btn-inverse" href="#"><strong>.</strong></span></td>
-			        <td id="dial0"><span class="btn" href="#">0</span></td>
-			        <td id="dialdel"><span class="btn btn-danger" href="#"><</span></td>
-		        </tr>
-	        </table>
+		        <table id="dialer">
+			        <tr>
+				        <td id="dial1"><span class="btn" href="#">1</span></td>
+				        <td id="dial2"><span class="btn" href="#">2</span></td>
+				        <td id="dial3"><span class="btn" href="#">3</span></td>
+			        </tr>
+			        <tr>
+				        <td id="dial4"><span class="btn" href="#">4</span></td>
+				        <td id="dial5"><span class="btn" href="#">5</span></td>
+				        <td id="dial6"><span class="btn" href="#">6</span></td>
+			        </tr>
+			        <tr>
+				        <td id="dial7"><span class="btn" href="#">7</span></td>
+				        <td id="dial8"><span class="btn" href="#">8</span></td>
+				        <td id="dial9"><span class="btn" href="#">9</span></td>
+			        </tr>
+			        <tr>
+				        <td id="dialdot"><span class="btn btn-inverse" href="#"><strong>.</strong></span></td>
+				        <td id="dial0"><span class="btn" href="#">0</span></td>
+				        <td id="dialdel"><span class="btn btn-danger" href="#"><</span></td>
+			        </tr>
+		        </table>
+					</div>
 
           <input id="bill-description" class="span6" size="16" placeholder="Description" name="bill-description" type="text">
           <br />
@@ -87,11 +90,7 @@
             <tr>
               <td class="bill-value-col">
                 <strong>{% if bill.money > 0 %}+{% endif %}{{ bill.money }} &#8364;</strong>
-                {% if bill.method == 'Visa' %}
-                <img src="/static/img/visa.png" class="bill-method-icon" />
-                {% elif bill.method == 'Cash' %}
-                <img src="/static/img/cash.png" class="bill-method-icon" />
-                {% endif %}
+                <img src="/static/img/{{ bill.method|lower }}.png" class="bill-method-icon" />
               </td>
               <td>
                 {{ bill.description }}<br /><span class="muted">{{ bill.formattedDate() }}</span>

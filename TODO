@@ -14,6 +14,7 @@
 + DONE NEW Receipts becomes finances, handles both income (+) and outcome (-)
 + DONE IMPROVE Cooler radio buttons for visa/cash with icon
 - TODO IMPROVE Width 100% for visa/cash radio button group
+- TODO IMPROVE Better responsiveness for clicking on dialer on mobile
 - TODO IMPROVE Negative/positive colors for list of bills
 - TODO NEW Categories in finance
 - TODO NEW Urgent flag for tasks
