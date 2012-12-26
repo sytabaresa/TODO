@@ -19,6 +19,7 @@
 </head>
 
 <body>
+
 	<div class="container" style="margin-top:10px">
     {# ------------- TABS -------------- #}
     <ul class="nav nav-pills">
@@ -48,6 +49,7 @@
 	            <input id="bill-input" size="18" placeholder="0.00" name="bill-money" type="text">
 	            <span id="euro-label" class="add-on">€</span>
 	          </div>
+						<span id="fastclick">
 		        <table id="dialer">
 			        <tr>
 				        <td id="dial1"><span class="btn" href="#">1</span></td>
@@ -70,6 +72,7 @@
 				        <td id="dialdel"><span class="btn btn-danger" href="#"><</span></td>
 			        </tr>
 		        </table>
+						</span>
 					</div>
 
           <input id="bill-description" class="span6" size="16" placeholder="Description" name="bill-description" type="text">
@@ -178,7 +181,9 @@
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
 <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<!--<script src="http://code.jquery.com/mobile/latest/jquery.mobile.min.js"></script>-->
 <script src="/static/js/bootstrap.js"></script>
+<script src="/static/js/fastclick.js"></script>
 <script src="/static/js/front.js"></script>
 <script>
   $('body').bind('touchmove', function(event) { event.preventDefault() }); // turns off
