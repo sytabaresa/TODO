@@ -25,6 +25,7 @@ class Task(db.Model):
 class Bill(db.Model):
 	"""Record of something I bought"""
 	money = db.FloatProperty()
+	cents = db.StringProperty()
 	date = db.DateTimeProperty(auto_now_add=True)
 	description = db.StringProperty()
 	method = db.CategoryProperty()
@@ -101,7 +102,13 @@ class DoneHandler(webapp.RequestHandler):
 class BillInserter(webapp.RequestHandler):
 	def post(self):
 		bill = Bill()
-		bill.money = float(self.request.get('bill-money'))
+		moneystr = self.request.get('bill-money')
+		moneystr = moneystr.replace(',','.')
+		bill.money = float(moneystr)
+		if len(moneystr.split('.')) >= 2:
+			bill.cents = moneystr.split('.')[1]
+		else:
+			bill.cents = '00'
 		bill.description = self.request.get('bill-description')
 		bill.method = self.request.get('bill-method')
 		bill.put()

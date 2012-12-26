@@ -92,7 +92,9 @@
           {% for bill in bills %}
             <tr>
               <td class="bill-value-col">
-                <strong>{% if bill.money > 0 %}+{% endif %}{{ bill.money }} &#8364;</strong>
+                <strong class="{% if bill.money < 0 %}negative{% else %}positive{% endif %}">
+                  {% if bill.money > 0 %}+{% endif %}<span class="big">{{ bill.money|int }}</span>.{{ bill.cents }} &#8364;
+                </strong>
                 <img src="/static/img/{{ bill.method|lower }}.png" class="bill-method-icon" />
               </td>
               <td>

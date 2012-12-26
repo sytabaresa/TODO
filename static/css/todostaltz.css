@@ -116,3 +116,15 @@ table#dialer td span, table#dialer td a {
 button#save-bill {
 	width: 100%;
 }
+
+td.bill-value-col > strong.negative {
+	color: #e27000;
+}
+
+td.bill-value-col > strong.positive {
+	color: #22a200;
+}
+
+span.big {
+	font-size: 150%;
+}
