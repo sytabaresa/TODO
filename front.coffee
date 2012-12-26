@@ -13,11 +13,11 @@ $ ->
 			return false
 
 	for num in [0..9]
-		$("td#dial"+String(num)).find("span").click appendText(String(num))
+		$("td#dial"+String(num)).find("span").mousedown appendText(String(num))
 
-	$("td#dialdot").find("span").click appendText(".")
+	$("td#dialdot").find("span").mousedown appendText(".")
 
-	$("td#dialdel").find("span").click ->
+	$("td#dialdel").find("span").mousedown ->
 		theinput = $("input#bill-input:first")
 		previous = theinput.val()
 		theinput.val(previous.substr(0,previous.length-1))

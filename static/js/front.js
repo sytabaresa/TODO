@@ -15,10 +15,10 @@
       };
     };
     for (num = _i = 0; _i <= 9; num = ++_i) {
-      $("td#dial" + String(num)).find("span").click(appendText(String(num)));
+      $("td#dial" + String(num)).find("span").mousedown(appendText(String(num)));
     }
-    $("td#dialdot").find("span").click(appendText("."));
-    $("td#dialdel").find("span").click(function() {
+    $("td#dialdot").find("span").mousedown(appendText("."));
+    $("td#dialdel").find("span").mousedown(function() {
       var previous, theinput;
       theinput = $("input#bill-input:first");
       previous = theinput.val();
