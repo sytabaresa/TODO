@@ -22,7 +22,7 @@ class Task(db.Model):
 	def formattedDateDone(self):
 		return myFormatDate(self.datedone)
 
-class Receipt(db.Model):
+class Bill(db.Model):
 	"""Record of something I bought"""
 	money = db.FloatProperty()
 	date = db.DateTimeProperty(auto_now_add=True)
@@ -47,21 +47,21 @@ class MainPage(webapp.RequestHandler):
 		                   "FROM Task "
 		                   "WHERE done = TRUE "
 		                   "ORDER BY date DESC LIMIT 4")
-		receipts = db.GqlQuery("SELECT * "
-		                       "FROM Receipt "
+		bills = db.GqlQuery("SELECT * "
+		                       "FROM Bill "
 		                       "ORDER BY date DESC")
 		wishes = db.GqlQuery("SELECT * "
 		                     "FROM Wish")
 
 		activetab = self.request.get('activetab')
 		if not activetab:
-			activetab = 'receipts'
+			activetab = 'bills'
 		#logging.info('activetab %s'%activetab)
 
 		template_values = {
 		'tasks': tasks,
 		'done': done,
-		'receipts': receipts,
+		'bills': bills,
 		'wishes': wishes,
 		'activetab': activetab,
 		}
@@ -98,21 +98,21 @@ class DoneHandler(webapp.RequestHandler):
 		task.put()
 		self.redirect('/')
 
-class ReceiptInserter(webapp.RequestHandler):
+class BillInserter(webapp.RequestHandler):
 	def post(self):
-		receipt = Receipt()
-		receipt.money = float(self.request.get('receiptmoney'))
-		receipt.description = self.request.get('receiptdescription')
-		receipt.method = self.request.get('receiptmethod')
-		receipt.put()
-		self.redirect('/?activetab=receipts')
+		bill = Bill()
+		bill.money = float(self.request.get('bill-money'))
+		bill.description = self.request.get('bill-description')
+		bill.method = self.request.get('bill-method')
+		bill.put()
+		self.redirect('/?activetab=bills')
 
-class ReceiptDeleter(webapp.RequestHandler):
+class BillDeleter(webapp.RequestHandler):
 	def post(self):
-		receiptid = int(self.request.get('receiptid'))
-		receipt = Receipt.get_by_id(receiptid)
-		receipt.delete()
-		self.redirect('/?activetab=receipts')
+		billid = int(self.request.get('billid'))
+		bill = Bill.get_by_id(billid)
+		bill.delete()
+		self.redirect('/?activetab=bills')
 
 class WishInserter(webapp.RequestHandler):
 	def post(self):
@@ -135,8 +135,8 @@ app = webapp.WSGIApplication([
 	('/', MainPage),
 	('/insertTask', TaskInserter),
 	('/doneTask', DoneHandler),
-	('/insertReceipt', ReceiptInserter),
-	('/deleteReceipt', ReceiptDeleter),
+	('/insertBill', BillInserter),
+	('/deleteBill', BillDeleter),
 	('/insertWish', WishInserter),
 	('/deleteWish', WishDeleter),
 	('/eversticky', Eversticky),

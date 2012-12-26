@@ -21,9 +21,9 @@
 <body>
 	<div class="container" style="margin-top:10px">
     {# ------------- TABS -------------- #}
-    <ul class="nav nav-tabs">
-      <li{% if activetab == 'receipts' %} class="active"{% endif %}>
-        <a href="#receiptscontainer" data-toggle="tab">Finance</a>
+    <ul class="nav nav-pills">
+      <li{% if activetab == 'bills' %} class="active"{% endif %}>
+        <a href="#billscontainer" data-toggle="tab">Finance</a>
       </li>
 	    <li{% if activetab == 'tobuy' %} class="active"{% endif %}>
 	      <a href="#tobuycontainer" data-toggle="tab">Shopping</a>
@@ -35,11 +35,15 @@
 
     <div class="tab-content" style="padding-bottom:100px">
 
-      {# ------------- Receipts -------------- #}
-      <div class="tab-pane{% if activetab == 'receipts' %} active{% endif %}" id="receiptscontainer">
-        <form action="/insertReceipt" method="POST">
+      {# ------------- Bills -------------- #}
+      <div class="tab-pane{% if activetab == 'bills' %} active{% endif %}" id="bills-container">
+        <form action="/insertBill" method="POST">
           <div class="input-append input-prepend">
-            <input id="finance-input" size="18" placeholder="0.00" name="receiptmoney" type="text">
+	          <div id="minus-plus" class="btn-group" data-toggle="buttons-radio">
+	            <button id="bill-minus" type="button" name="minus" class="btn btn-warning add-on active">-</button>
+	            <button id="bill-plus" type="button" name="plus" class="btn btn-success add-on">+</button>
+	          </div>
+            <input id="bill-input" size="18" placeholder="0.00" name="bill-money" type="text">
             <span id="euro-label" class="add-on">€</span>
           </div>
 	        <table id="dialer">
@@ -65,38 +69,37 @@
 		        </tr>
 	        </table>
 
-          <input id="finance-description" class="span6" size="16" placeholder="Description" name="receiptdescription" type="text">
+          <input id="bill-description" class="span6" size="16" placeholder="Description" name="bill-description" type="text">
           <br />
-          <label class="radio">
-            <input type="radio" name="receiptmethod" id="visaRadio" value="Visa" checked>
-            Visa
-          </label>
-          <label class="radio">
-            <input type="radio" name="receiptmethod" id="cashRadio" value="Cash">
-            Cash
-          </label>
+
+	        <input type="hidden" value="Visa" name="bill-method">
+	        <div id="bill-method" class="btn-group" data-toggle="buttons-radio">
+		        <button id="bill-visa" type="button" class="btn add-on active"><img src="/static/img/visa.png" class="bill-method-icon" /> Visa</button>
+		        <button id="bill-cash" type="button" class="btn add-on"><img src="/static/img/cash.png" class="bill-method-icon" /> Cash</button>
+	        </div>
+
           <br />
-          <button class="btn btn-primary" type="submit" type="button">Save</button>
+          <button id="save-bill" class="btn btn-primary" type="submit" type="button">Save</button>
         </form>
         <hr>
         <table class="table table-striped">
-          {% for receipt in receipts %}
+          {% for bill in bills %}
             <tr>
-              <td class="receipt-value-col">
-                <strong>{{ receipt.money }} &#8364;</strong>
-                {% if receipt.method == 'Visa' %}
-                <img src="/static/img/visa.png" class="receipt-method-icon" />
-                {% elif receipt.method == 'Cash' %}
-                <img src="/static/img/cash.png" class="receipt-method-icon" />
+              <td class="bill-value-col">
+                <strong>{% if bill.money > 0 %}+{% endif %}{{ bill.money }} &#8364;</strong>
+                {% if bill.method == 'Visa' %}
+                <img src="/static/img/visa.png" class="bill-method-icon" />
+                {% elif bill.method == 'Cash' %}
+                <img src="/static/img/cash.png" class="bill-method-icon" />
                 {% endif %}
               </td>
               <td>
-                {{ receipt.description }}<br /><span class="muted">{{ receipt.formattedDate() }}</span>
+                {{ bill.description }}<br /><span class="muted">{{ bill.formattedDate() }}</span>
               </td>
               <td class="right-column">
-                <form class="no-style-form" action="/deleteReceipt" method="POST">
+                <form class="no-style-form" action="/deleteBill" method="POST">
                   <button class="btn" type="submit"><i class="icon-remove"></i></button>
-                  <input type="hidden" name="receiptid" value="{{ receipt.key().id() }}">
+                  <input type="hidden" name="billid" value="{{ bill.key().id() }}">
                 </form>
               </td>
             </tr>

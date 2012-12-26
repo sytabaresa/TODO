@@ -11,9 +11,11 @@
 + DONE NEW Support for Eversticky widget
 + DONE IMPROVE Good layout of receipts for mobile
 + DONE NEW Number dialer for finances page
-- TODO NEW Receipts becomes finances, handles both income (+) and outcome (-)
++ DONE NEW Receipts becomes finances, handles both income (+) and outcome (-)
++ DONE IMPROVE Cooler radio buttons for visa/cash with icon
+- TODO IMPROVE Width 100% for visa/cash radio button group
+- TODO IMPROVE Negative/positive colors for list of bills
 - TODO NEW Categories in finance
-- TODO IMPROVE Cooler radio buttons for visa/cash with icon
 - TODO NEW Urgent flag for tasks
 - TODO NEW Task reminders by email
 - TODO IMPROVE URL reference of wish is validated ('http://' necessary)
