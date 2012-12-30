@@ -67,9 +67,12 @@ class MainPage(webapp.RequestHandler):
 		                   "FROM Task "
 		                   "WHERE done = TRUE "
 		                   "ORDER BY date DESC LIMIT 4")
+		this_year = datetime.datetime.now().year
+		this_month = datetime.datetime.now().month
 		bills = db.GqlQuery("SELECT * "
-		                       "FROM Bill "
-		                       "ORDER BY date DESC")
+	                       "FROM Bill "
+	                       "WHERE date >= DATETIME('"+str(this_year)+"-"+str(this_month)+"-01 00:00:00') "
+	                       "ORDER BY date DESC")
 		wishes = db.GqlQuery("SELECT * "
 		                     "FROM Wish")
 		categories = db.GqlQuery("SELECT * "
@@ -78,7 +81,6 @@ class MainPage(webapp.RequestHandler):
 
 		this_month_expenses = 0
 		for bill in bills:
-#			bill.cents = str(int(abs(round(bill.money*100))%100))
 			if bill.money < 0 and bill.date.month == datetime.datetime.now().month:
 				this_month_expenses += abs(bill.money)
 
@@ -97,6 +99,7 @@ class MainPage(webapp.RequestHandler):
 			'activetab': activetab,
 		}
 
+		# In case you want to load categories data to local database
 		#BillCategory.loadCategoriesFromFile()
 
 		template = jinja_environment.get_template('templates/index.html')
@@ -138,13 +141,7 @@ class BillInserter(webapp.RequestHandler):
 		moneystr = self.request.get('bill-money')
 		moneystr = moneystr.replace(',','.')
 		bill.money = float(moneystr)
-#		bill.cents = str(int(abs(round(asd*100))%100))
-#		bill.money*100.0|round|abs
-#		if len(moneystr.split('.')) >= 2:
-#			bill.cents = moneystr.split('.')[1]
-#		else:
-#			bill.cents = '00'
-
+		#bill.cents = str(int(abs(round(asd*100))%100)) # Not necessary anymore, just for info
 		bill.category = BillCategory.get(self.request.get('bill-category'))
 		bill.description = self.request.get('bill-description')
 		bill.method = self.request.get('bill-method')
