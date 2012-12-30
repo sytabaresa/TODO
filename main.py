@@ -78,6 +78,7 @@ class MainPage(webapp.RequestHandler):
 
 		this_month_expenses = 0
 		for bill in bills:
+#			bill.cents = str(int(abs(round(bill.money*100))%100))
 			if bill.money < 0 and bill.date.month == datetime.datetime.now().month:
 				this_month_expenses += abs(bill.money)
 
@@ -137,10 +138,12 @@ class BillInserter(webapp.RequestHandler):
 		moneystr = self.request.get('bill-money')
 		moneystr = moneystr.replace(',','.')
 		bill.money = float(moneystr)
-		if len(moneystr.split('.')) >= 2:
-			bill.cents = moneystr.split('.')[1]
-		else:
-			bill.cents = '00'
+#		bill.cents = str(int(abs(round(asd*100))%100))
+#		bill.money*100.0|round|abs
+#		if len(moneystr.split('.')) >= 2:
+#			bill.cents = moneystr.split('.')[1]
+#		else:
+#			bill.cents = '00'
 
 		bill.category = BillCategory.get(self.request.get('bill-category'))
 		bill.description = self.request.get('bill-description')

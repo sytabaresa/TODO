@@ -106,7 +106,12 @@
             <tr>
               <td class="bill-value-col">
                  <strong class="{% if bill.money < 0 %}negative{% else %}positive{% endif %}">
-                  {% if bill.money > 0 %}+{% endif %}<span class="big">{{ bill.money|int }}</span>.{{ bill.cents }} &#8364;
+	                 {# Calculate cents #}
+	                 {% set cents1 = bill.money*100.0 %}
+	                 {% set cents2 = cents1|round|abs %}
+	                 {% set cents3 = cents2%100 %}
+	                 {% set cents4 = cents3|int|string %}
+                  {% if bill.money > 0 %}+{% endif %}<span class="big">{{ bill.money|int }}</span>.{{ cents4 }} &#8364;
                 </strong>
                 <img src="/static/img/{{ bill.method|lower }}.png" class="bill-method-icon" />
 	              <span class="muted">{{ bill.formattedDate() }}</span>

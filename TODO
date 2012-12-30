@@ -18,6 +18,7 @@
 + DONE IMPROVE Negative/positive colors for list of bills
 + DONE NEW Categories in finance
 + DONE IMPROVE Better layout of bills list
++ DONE IMPROVE No more bills cents hack
 - TODO IMPROVE Dont fetch ALL bills, but still wishly calculate this_month_expenses
 - TODO NEW Urgent flag for tasks
 - TODO NEW Task reminders by email
