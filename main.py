@@ -96,6 +96,8 @@ class MainPage(webapp.RequestHandler):
 			'activetab': activetab,
 		}
 
+		#BillCategory.loadCategoriesFromFile()
+
 		template = jinja_environment.get_template('templates/index.html')
 		self.response.out.write(template.render(template_values))
 
@@ -141,7 +143,7 @@ class BillInserter(webapp.RequestHandler):
 			bill.cents = '00'
 
 		bill.category = BillCategory.get(self.request.get('bill-category'))
-#		bill.description = self.request.get('bill-description')
+		bill.description = self.request.get('bill-description')
 		bill.method = self.request.get('bill-method')
 		bill.put()
 		self.redirect('/?activetab=bills')

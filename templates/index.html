@@ -87,14 +87,15 @@
 		          <option value="{{ cat.key() }}">{{ cat.title }}</option>
 		        {% endfor %}
 	        </select>
-          <!--<input id="bill-description" class="span6" size="16" placeholder="Description" name="bill-description" type="text">-->
-          <br />
 
+          <br />
 	        <input type="hidden" value="Visa" name="bill-method">
 	        <div id="bill-method" class="btn-group" data-toggle="buttons-radio">
 		        <button id="bill-visa" type="button" class="btn add-on active"><img src="/static/img/visa.png" class="bill-method-icon" /> Visa</button>
 		        <button id="bill-cash" type="button" class="btn add-on"><img src="/static/img/cash.png" class="bill-method-icon" /> Cash</button>
 	        </div>
+
+          <input id="bill-description" class="span6" size="16" placeholder="Description" name="bill-description" type="text">
 
           <br />
           <button id="save-bill" class="btn btn-primary" type="submit" type="button">Save</button>
@@ -104,13 +105,13 @@
           {% for bill in bills %}
             <tr>
               <td class="bill-value-col">
-                <strong class="{% if bill.money < 0 %}negative{% else %}positive{% endif %}">
+                 <strong class="{% if bill.money < 0 %}negative{% else %}positive{% endif %}">
                   {% if bill.money > 0 %}+{% endif %}<span class="big">{{ bill.money|int }}</span>.{{ bill.cents }} &#8364;
                 </strong>
                 <img src="/static/img/{{ bill.method|lower }}.png" class="bill-method-icon" />
-              </td>
-              <td>
-                {{ bill.category.title }}<br /><span class="muted">{{ bill.formattedDate() }}</span>
+	              <span class="muted">{{ bill.formattedDate() }}</span>
+	              <br />
+                {{ bill.category.title }}
               </td>
               <td class="right-column">
                 <form class="no-style-form" action="/deleteBill" method="POST">
