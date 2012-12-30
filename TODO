@@ -16,7 +16,8 @@
 + DONE IMPROVE Width 100% for visa/cash radio button group
 + DONE IMPROVE Better responsiveness for clicking on dialer on mobile
 + DONE IMPROVE Negative/positive colors for list of bills
-- TODO NEW Categories in finance
++ DONE NEW Categories in finance
+- TODO IMPROVE Dont fetch ALL bills, but still wishly calculate this_month_expenses
 - TODO NEW Urgent flag for tasks
 - TODO NEW Task reminders by email
 - TODO IMPROVE URL reference of wish is validated ('http://' necessary)

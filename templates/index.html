@@ -38,7 +38,8 @@
 
       {# ------------- Bills -------------- #}
       <div class="tab-pane{% if activetab == 'bills' %} active{% endif %}" id="billscontainer">
-        <form action="/insertBill" method="POST">
+        <small><strong>This month you have spent {{ this_month_expenses }}€.</strong></small>
+	      <form action="/insertBill" method="POST">
 
 					<div class="well">
 	          <div class="input-append input-prepend">
@@ -75,7 +76,18 @@
 						</span>
 					</div>
 
-          <input id="bill-description" class="span6" size="16" placeholder="Description" name="bill-description" type="text">
+	        <select name="bill-category" id="bill-category">
+		        <option value="groceries">(Choose category...)</option>
+		        {% set previous_section = 0 %}
+		        {% for cat in categories %}
+		          {% if cat.display_section != previous_section %}
+		            <option value="none">--------</option>
+		          {% endif %}
+		          {% set previous_section = cat.display_section %}
+		          <option value="{{ cat.key() }}">{{ cat.title }}</option>
+		        {% endfor %}
+	        </select>
+          <!--<input id="bill-description" class="span6" size="16" placeholder="Description" name="bill-description" type="text">-->
           <br />
 
 	        <input type="hidden" value="Visa" name="bill-method">
@@ -98,7 +110,7 @@
                 <img src="/static/img/{{ bill.method|lower }}.png" class="bill-method-icon" />
               </td>
               <td>
-                {{ bill.description }}<br /><span class="muted">{{ bill.formattedDate() }}</span>
+                {{ bill.category.title }}<br /><span class="muted">{{ bill.formattedDate() }}</span>
               </td>
               <td class="right-column">
                 <form class="no-style-form" action="/deleteBill" method="POST">

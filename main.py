@@ -9,6 +9,7 @@ import datetime
 jinja_environment = jinja2.Environment(
 	loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
+
 def myFormatDate(date):
 	return date.strftime('%d.%m.%Y')
 
@@ -22,11 +23,29 @@ class Task(db.Model):
 	def formattedDateDone(self):
 		return myFormatDate(self.datedone)
 
+class BillCategory(db.Model):
+	"""A category of expenses"""
+	title = db.StringProperty()
+	display_order = db.IntegerProperty()
+	display_section = db.IntegerProperty()
+
+	@staticmethod
+	def loadCategoriesFromFile():
+		f = file("./categories.csv")
+		for line in f.readlines():
+			cols = line.split(',')
+			newCat = BillCategory()
+			newCat.display_order = int(cols[0])
+			newCat.display_section = int(cols[1])
+			newCat.title = cols[2].strip('\n')
+			newCat.put()
+
 class Bill(db.Model):
 	"""Record of something I bought"""
 	money = db.FloatProperty()
 	cents = db.StringProperty()
 	date = db.DateTimeProperty(auto_now_add=True)
+	category = db.ReferenceProperty(BillCategory)
 	description = db.StringProperty()
 	method = db.CategoryProperty()
 
@@ -53,6 +72,14 @@ class MainPage(webapp.RequestHandler):
 		                       "ORDER BY date DESC")
 		wishes = db.GqlQuery("SELECT * "
 		                     "FROM Wish")
+		categories = db.GqlQuery("SELECT * "
+		                         "FROM BillCategory "
+		                         "ORDER BY display_order")
+
+		this_month_expenses = 0
+		for bill in bills:
+			if bill.money < 0 and bill.date.month == datetime.datetime.now().month:
+				this_month_expenses += abs(bill.money)
 
 		activetab = self.request.get('activetab')
 		if not activetab:
@@ -60,11 +87,13 @@ class MainPage(webapp.RequestHandler):
 		#logging.info('activetab %s'%activetab)
 
 		template_values = {
-		'tasks': tasks,
-		'done': done,
-		'bills': bills,
-		'wishes': wishes,
-		'activetab': activetab,
+			'tasks': tasks,
+			'done': done,
+			'bills': bills,
+			'categories': categories,
+			'wishes': wishes,
+			'this_month_expenses': this_month_expenses,
+			'activetab': activetab,
 		}
 
 		template = jinja_environment.get_template('templates/index.html')
@@ -102,6 +131,7 @@ class DoneHandler(webapp.RequestHandler):
 class BillInserter(webapp.RequestHandler):
 	def post(self):
 		bill = Bill()
+
 		moneystr = self.request.get('bill-money')
 		moneystr = moneystr.replace(',','.')
 		bill.money = float(moneystr)
@@ -109,7 +139,9 @@ class BillInserter(webapp.RequestHandler):
 			bill.cents = moneystr.split('.')[1]
 		else:
 			bill.cents = '00'
-		bill.description = self.request.get('bill-description')
+
+		bill.category = BillCategory.get(self.request.get('bill-category'))
+#		bill.description = self.request.get('bill-description')
 		bill.method = self.request.get('bill-method')
 		bill.put()
 		self.redirect('/?activetab=bills')
