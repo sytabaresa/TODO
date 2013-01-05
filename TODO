@@ -20,6 +20,8 @@
 + DONE IMPROVE Better layout of bills list
 + DONE IMPROVE No more bills cents hack
 + DONE IMPROVE Fetch only bills from current month 
++ DONE IMPROVE Allow only andre.staltz@gmail.com and mesituominen@gmail.com
++ DONE NEW Play/stop tasks saving to google calendar
 - TODO NEW Urgent flag for tasks
 - TODO NEW Task reminders by email
 - TODO IMPROVE URL reference of wish is validated ('http://' necessary)

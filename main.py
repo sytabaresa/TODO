@@ -9,6 +9,19 @@ import datetime
 jinja_environment = jinja2.Environment(
 	loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
+from oauth2client.appengine import OAuth2Decorator
+from apiclient.discovery import build
+
+use_google_auth = True
+allowed_users = ['andre.staltz@gmail.com', 'mesituominen@gmail.com', 'mesi.tuominen@gmail.com']
+atividades_cal = '862ukq5llt4v0i9t6bl8shv8e0@group.calendar.google.com'
+oauth_decorator = OAuth2Decorator(
+	client_id='235295882530.apps.googleusercontent.com',
+	client_secret='W6ok7IKTiWg-xy_E4ZTUkIZn',
+	scope='https://www.googleapis.com/auth/calendar'
+)
+gcal_service = build('calendar', 'v3')
+gcal_timeformat = "%Y-%m-%dT%H:%M:%S"
 
 def myFormatDate(date):
 	return date.strftime('%d.%m.%Y')
@@ -17,8 +30,11 @@ class Task(db.Model):
 	"""Something to do"""
 	text = db.StringProperty()
 	date = db.DateTimeProperty(auto_now_add=True)
-	datedone = db.DateProperty()
+	dateplay = db.DateTimeProperty()
+	datedone = db.DateTimeProperty()
+	playing = db.BooleanProperty(default=False)
 	done = db.BooleanProperty(default=False)
+	eventId = db.StringProperty()
 
 	def formattedDateDone(self):
 		return myFormatDate(self.datedone)
@@ -58,7 +74,19 @@ class Wish(db.Model):
 	reference = db.StringProperty()
 
 class MainPage(webapp.RequestHandler):
+	@oauth_decorator.oauth_required
 	def get(self):
+		http = None
+		user = None
+		if use_google_auth:
+			# Get the authorized Http object created by the decorator
+			http = oauth_decorator.http()
+			user  = users.get_current_user()
+			if user.email() not in allowed_users:
+				self.response.status = 403
+				self.response.out.write("Sorry, you are not allowed")
+				return
+
 		tasks = db.GqlQuery("SELECT * "
 		                    "FROM Task "
 		                    "WHERE done = FALSE "
@@ -89,6 +117,10 @@ class MainPage(webapp.RequestHandler):
 			activetab = 'bills'
 		#logging.info('activetab %s'%activetab)
 
+		user_link = None
+		if use_google_auth:
+			user_link = users.create_logout_url('/') if user else users.create_login_url('/')
+
 		template_values = {
 			'tasks': tasks,
 			'done': done,
@@ -97,6 +129,8 @@ class MainPage(webapp.RequestHandler):
 			'wishes': wishes,
 			'this_month_expenses': this_month_expenses,
 			'activetab': activetab,
+			'user': user,
+			'user_link': user_link,
 		}
 
 		# In case you want to load categories data to local database
@@ -112,6 +146,79 @@ class TaskInserter(webapp.RequestHandler):
 		task.put()
 		self.redirect('/')
 
+class EET(datetime.tzinfo):
+	def utcoffset(self, dt):
+		return datetime.timedelta(hours=2)
+	def dst(self, dt):
+		return datetime.timedelta(0)
+
+
+class TaskPlay(webapp.RequestHandler):
+	@oauth_decorator.oauth_aware
+	def post(self):
+		http = None
+		if use_google_auth:
+			http = oauth_decorator.http()
+
+		taskid = int(self.request.get('taskid'))
+		task = Task.get_by_id(taskid)
+
+		now = datetime.datetime.now(EET())
+		later = now+datetime.timedelta(0, 900)
+
+		event = {
+			'kind': 'calendar#event',
+			'summary': task.text,
+			'start': {
+				'dateTime': now.strftime(gcal_timeformat),
+			   'timeZone': 'Europe/Helsinki'
+			},
+			'end': {
+				'dateTime': later.strftime(gcal_timeformat),
+			   'timeZone': 'Europe/Helsinki'
+			},
+		}
+
+		if use_google_auth:
+			created_event = gcal_service.events().insert(calendarId=atividades_cal, body=event).execute(http=http)
+			task.eventId = created_event['id']
+
+		task.playing = True
+		task.dateplay = datetime.datetime.now(EET())
+		task.put()
+		self.redirect('/?activetab=todo')
+
+class TaskStop(webapp.RequestHandler):
+	@oauth_decorator.oauth_aware
+	def post(self):
+		http = None
+		if use_google_auth:
+			http = oauth_decorator.http()
+
+		taskid = int(self.request.get('taskid'))
+		task = Task.get_by_id(taskid)
+
+		if use_google_auth:
+			now = datetime.datetime.now(EET())
+			event = gcal_service.events().get(calendarId=atividades_cal, eventId=task.eventId).execute(http=http)
+			event['end'] = {
+	         'dateTime': now.strftime(gcal_timeformat),
+	         'timeZone': 'Europe/Helsinki'
+         }
+			updated_event = gcal_service.events().update(calendarId=atividades_cal, eventId=task.eventId, body=event).execute(http=http)
+
+		task.done = True
+		task.datedone = datetime.datetime.now(EET())
+		task.put()
+		self.redirect('/?activetab=todo')
+
+class TaskDeleter(webapp.RequestHandler):
+	def post(self):
+		taskid = int(self.request.get('taskid'))
+		task = Task.get_by_id(taskid)
+		task.delete()
+		self.redirect('/?activetab=todo')
+
 class Eversticky(webapp.RequestHandler):
 	def get(self):
 		self.response.headers['Content-Type'] = 'text/plain'
@@ -124,15 +231,6 @@ class Eversticky(webapp.RequestHandler):
 		for task in tasks:
 			lines.append(task.text)
 		self.response.out.write('\n'.join(lines))
-
-class DoneHandler(webapp.RequestHandler):
-	def post(self):
-		taskid = int(self.request.get('taskid'))
-		task = Task.get_by_id(taskid)
-		task.done = True
-		task.datedone = datetime.date.today()
-		task.put()
-		self.redirect('/')
 
 class BillInserter(webapp.RequestHandler):
 	def post(self):
@@ -174,12 +272,19 @@ class WishDeleter(webapp.RequestHandler):
 
 app = webapp.WSGIApplication([
 	('/', MainPage),
+	(oauth_decorator.callback_path, oauth_decorator.callback_handler()),
+
 	('/insertTask', TaskInserter),
-	('/doneTask', DoneHandler),
+	('/playTask', TaskPlay),
+	('/stopTask', TaskStop),
+	('/deleteTask', TaskDeleter),
+
 	('/insertBill', BillInserter),
 	('/deleteBill', BillDeleter),
+
 	('/insertWish', WishInserter),
 	('/deleteWish', WishDeleter),
+
 	('/eversticky', Eversticky),
 	],
 	debug=True)
