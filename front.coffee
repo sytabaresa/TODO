@@ -4,7 +4,8 @@ $ = jQuery
 # =======================================================================================
 $ ->
 
-	initFastButtons()
+	if $("#fastclick").length > 0
+		initFastButtons()
 
 	# DIALER
 	# ==========================================================
@@ -35,5 +36,21 @@ $ ->
 		# Get method from btn-group radio
 		$("input[name=bill-method]").val( $("#bill-method").find("button.active").text().trim() )
 
+	drawChart = (data) ->
+		console.log data
+		data2 = google.visualization.arrayToDataTable(data)
+		options = {
+			title: "Expenses"
+		}
+		$("#chart").html("")
+		chart = new google.visualization.PieChart(document.getElementById('chart'))
+		chart.draw(data2, options)
+
+	loadData = ->
+		$.post('/_statistics', (data) ->
+			drawChart(data)
+		)
+
+	google.setOnLoadCallback(loadData)
 
 	return false

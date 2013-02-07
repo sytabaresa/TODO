@@ -5,8 +5,10 @@
   $ = jQuery;
 
   $(function() {
-    var appendText, num, _i;
-    initFastButtons();
+    var appendText, drawChart, loadData, num, _i;
+    if ($("#fastclick").length > 0) {
+      initFastButtons();
+    }
     appendText = function(t) {
       return function() {
         var theinput;
@@ -33,6 +35,23 @@
       $("input[name=bill-money]").val(sign + money);
       return $("input[name=bill-method]").val($("#bill-method").find("button.active").text().trim());
     });
+    drawChart = function(data) {
+      var chart, data2, options;
+      console.log(data);
+      data2 = google.visualization.arrayToDataTable(data);
+      options = {
+        title: "Expenses"
+      };
+      $("#chart").html("");
+      chart = new google.visualization.PieChart(document.getElementById('chart'));
+      return chart.draw(data2, options);
+    };
+    loadData = function() {
+      return $.post('/_statistics', function(data) {
+        return drawChart(data);
+      });
+    };
+    google.setOnLoadCallback(loadData);
     return false;
   });
 
