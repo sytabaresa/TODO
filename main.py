@@ -220,7 +220,7 @@ class Statistics(webapp.RequestHandler):
 
 		expenses = sorted(categories_expenses, key=categories_expenses.get)
 		for i in xrange(len(expenses)):
-			expenses[i] = [expenses[i], categories_expenses[expenses[i]]]
+			expenses[i] = [expenses[i], float(int(categories_expenses[expenses[i]]*100))/100.0]
 		expenses.reverse()
 
 		while expenses[-1][1] == 0:

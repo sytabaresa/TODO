@@ -24,7 +24,7 @@
 + DONE NEW Play/stop tasks saving to google calendar
 - TODO NEW Statistics page
 	+ DONE Use AJAX requesting _statistics data for javascript
-	- TODO Truncate expenses sum to 2 decimals
+	+ DONE Truncate expenses sum to 2 decimals
 	- TODO Pie chart shows currency (EUR)
 	- TODO Show also a normal list of category expenses
 - TODO NEW Urgent flag for tasks
