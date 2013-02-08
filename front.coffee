@@ -37,14 +37,16 @@ $ ->
 		$("input[name=bill-method]").val( $("#bill-method").find("button.active").text().trim() )
 
 	drawChart = (data) ->
-		console.log data
-		data2 = google.visualization.arrayToDataTable(data)
+		data.unshift(['Category', 'Total expenses'])
+		data = google.visualization.arrayToDataTable(data)
+		formatter = new google.visualization.NumberFormat({suffix: ' EUR', fractionDigits: 2})
+		formatter.format(data, 1)
 		options = {
-			title: "Expenses"
+			#title: "Expenses"
 		}
 		$("#chart").html("")
 		chart = new google.visualization.PieChart(document.getElementById('chart'))
-		chart.draw(data2, options)
+		chart.draw(data, options)
 
 	loadData = ->
 		$.post('/_statistics', (data) ->

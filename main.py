@@ -14,7 +14,8 @@ from oauth2client.appengine import OAuth2Decorator
 from apiclient.discovery import build
 
 use_google_auth = True
-allowed_users = ['andre.staltz@gmail.com', 'mesituominen@gmail.com', 'mesi.tuominen@gmail.com', 'mesimedeiros@gmail.com']
+allowed_users = ['andre.staltz@gmail.com', 'mesituominen@gmail.com', 'mesi.tuominen@gmail.com',
+                 'mesimedeiros@gmail.com']
 atividades_cal = '862ukq5llt4v0i9t6bl8shv8e0@group.calendar.google.com'
 oauth_decorator = OAuth2Decorator(
 	client_id='235295882530.apps.googleusercontent.com',
@@ -24,18 +25,21 @@ oauth_decorator = OAuth2Decorator(
 gcal_service = build('calendar', 'v3')
 gcal_timeformat = "%Y-%m-%dT%H:%M:%S"
 
+
 def myFormatDate(date):
 	return date.strftime('%d.%m.%Y')
+
 
 def userForbidden():
 	http = None
 	user = None
 	if use_google_auth:
 		http = oauth_decorator.http()
-		user  = users.get_current_user()
+		user = users.get_current_user()
 		if user.email() not in allowed_users:
 			return True
 	return False
+
 
 class Task(db.Model):
 	"""Something to do"""
@@ -49,6 +53,7 @@ class Task(db.Model):
 
 	def formattedDateDone(self):
 		return myFormatDate(self.datedone)
+
 
 class BillCategory(db.Model):
 	"""A category of expenses"""
@@ -66,6 +71,7 @@ class BillCategory(db.Model):
 			newCat.display_section = int(cols[1])
 			newCat.title = cols[2].strip('\n')
 			newCat.put()
+
 
 class Bill(db.Model):
 	"""Record of something I bought"""
@@ -87,15 +93,17 @@ class Bill(db.Model):
 			newBill = Bill()
 			newBill.money = float(cols[0])
 			newBill.method = cols[1]
-			query = "SELECT * FROM BillCategory WHERE title = '%s'"%cols[2].strip()
+			query = "SELECT * FROM BillCategory WHERE title = '%s'" % cols[2].strip()
 			category = db.GqlQuery(query)[0]
 			newBill.category = category
 			newBill.put()
+
 
 class Wish(db.Model):
 	"""Something I should buy"""
 	description = db.StringProperty()
 	reference = db.StringProperty()
+
 
 class MainPage(webapp.RequestHandler):
 	@oauth_decorator.oauth_required
@@ -105,7 +113,7 @@ class MainPage(webapp.RequestHandler):
 		if use_google_auth:
 			# Get the authorized Http object created by the decorator
 			http = oauth_decorator.http()
-			user  = users.get_current_user()
+			user = users.get_current_user()
 			if user.email() not in allowed_users:
 				self.response.status = 403
 				self.response.out.write("Sorry, you are not allowed")
@@ -122,9 +130,9 @@ class MainPage(webapp.RequestHandler):
 		this_year = datetime.datetime.now().year
 		this_month = datetime.datetime.now().month
 		bills = db.GqlQuery("SELECT * "
-	                       "FROM Bill "
-	                       "WHERE date >= DATETIME('"+str(this_year)+"-"+str(this_month)+"-01 00:00:00') "
-	                       "ORDER BY date DESC")
+		                    "FROM Bill "
+		                    "WHERE date >= DATETIME('" + str(this_year) + "-" + str(this_month) + "-01 00:00:00') "
+		                                                                                          "ORDER BY date DESC")
 		wishes = db.GqlQuery("SELECT * "
 		                     "FROM Wish")
 		categories = db.GqlQuery("SELECT * "
@@ -146,15 +154,15 @@ class MainPage(webapp.RequestHandler):
 			user_link = users.create_logout_url('/') if user else users.create_login_url('/')
 
 		template_values = {
-			'tasks': tasks,
-			'done': done,
-			'bills': bills,
-			'categories': categories,
-			'wishes': wishes,
-			'this_month_expenses': this_month_expenses,
-			'activetab': activetab,
-			'user': user,
-			'user_link': user_link,
+		'tasks': tasks,
+		'done': done,
+		'bills': bills,
+		'categories': categories,
+		'wishes': wishes,
+		'this_month_expenses': this_month_expenses,
+		'activetab': activetab,
+		'user': user,
+		'user_link': user_link,
 		}
 
 		# In case you want to load categories data to local database
@@ -163,22 +171,23 @@ class MainPage(webapp.RequestHandler):
 		template = jinja_environment.get_template('templates/index.html')
 		self.response.out.write(template.render(template_values))
 
+
 class ViewStatistics(webapp.RequestHandler):
 	@oauth_decorator.oauth_required
 	def get(self):
 		http = None
 		user = None
 		if use_google_auth:
-			# Get the authorized Http object created by the decorator
+		# Get the authorized Http object created by the decorator
 			http = oauth_decorator.http()
 			user  = users.get_current_user()
 			if user.email() not in allowed_users:
 				self.response.status = 403
 				self.response.out.write("Sorry, you are not allowed")
 				return
-
 		template = jinja_environment.get_template('templates/statistics.html')
 		self.response.out.write(template.render({}))
+
 
 class Statistics(webapp.RequestHandler):
 	@oauth_decorator.oauth_required
@@ -186,7 +195,7 @@ class Statistics(webapp.RequestHandler):
 		http = None
 		user = None
 		if use_google_auth:
-			# Get the authorized Http object created by the decorator
+		# Get the authorized Http object created by the decorator
 			http = oauth_decorator.http()
 			user  = users.get_current_user()
 			if user.email() not in allowed_users:
@@ -194,17 +203,17 @@ class Statistics(webapp.RequestHandler):
 				self.response.out.write("Sorry, you are not allowed")
 				return
 
-		# In case you want to load data to local database
-#		BillCategory.loadCategoriesFromFile()
-#		Bill.loadSampleBillsFromFile()
+			# In case you want to load data to local database
+			#		BillCategory.loadCategoriesFromFile()
+			#		Bill.loadSampleBillsFromFile()
 
 		this_year = datetime.datetime.now().year
 		this_month = datetime.datetime.now().month
 		categories = db.GqlQuery("SELECT * FROM BillCategory")
 		bills = db.GqlQuery("SELECT * "
 		                    "FROM Bill "
-		                    "WHERE date >= DATETIME('"+str(this_year)+"-"+str(this_month)+"-01 00:00:00') "
-                          "ORDER BY date DESC")
+		                    "WHERE date >= DATETIME('" + str(this_year) + "-" + str(this_month) + "-01 00:00:00') "
+		                                                                                          "ORDER BY date DESC")
 		categories_expenses = {}
 		for cat in categories:
 			categories_expenses[cat.title] = []
@@ -220,7 +229,7 @@ class Statistics(webapp.RequestHandler):
 
 		expenses = sorted(categories_expenses, key=categories_expenses.get)
 		for i in xrange(len(expenses)):
-			expenses[i] = [expenses[i], float(int(categories_expenses[expenses[i]]*100))/100.0]
+			expenses[i] = [expenses[i], float(int(categories_expenses[expenses[i]] * 100)) / 100.0]
 		expenses.reverse()
 
 		while expenses[-1][1] == 0:
@@ -230,6 +239,7 @@ class Statistics(webapp.RequestHandler):
 		self.response.headers['Content-Type'] = 'application/json'
 		self.response.out.write(data)
 
+
 class TaskInserter(webapp.RequestHandler):
 	def post(self):
 		task = Task()
@@ -237,11 +247,14 @@ class TaskInserter(webapp.RequestHandler):
 		task.put()
 		self.redirect('/?activetab=todo')
 
+
 class EET(datetime.tzinfo):
 	def utcoffset(self, dt):
 		return datetime.timedelta(hours=2)
+
 	def dst(self, dt):
 		return datetime.timedelta(0)
+
 
 class TaskPlay(webapp.RequestHandler):
 	@oauth_decorator.oauth_aware
@@ -254,19 +267,19 @@ class TaskPlay(webapp.RequestHandler):
 		task = Task.get_by_id(taskid)
 
 		now = datetime.datetime.now(EET())
-		later = now+datetime.timedelta(0, 900)
+		later = now + datetime.timedelta(0, 900)
 
 		event = {
-			'kind': 'calendar#event',
-			'summary': task.text,
-			'start': {
-				'dateTime': now.strftime(gcal_timeformat),
-			   'timeZone': 'Europe/Helsinki'
-			},
-			'end': {
-				'dateTime': later.strftime(gcal_timeformat),
-			   'timeZone': 'Europe/Helsinki'
-			},
+		'kind': 'calendar#event',
+		'summary': task.text,
+		'start': {
+		'dateTime': now.strftime(gcal_timeformat),
+		'timeZone': 'Europe/Helsinki'
+		},
+		'end': {
+		'dateTime': later.strftime(gcal_timeformat),
+		'timeZone': 'Europe/Helsinki'
+		},
 		}
 
 		if use_google_auth:
@@ -277,6 +290,7 @@ class TaskPlay(webapp.RequestHandler):
 		task.dateplay = datetime.datetime.now(EET())
 		task.put()
 		self.redirect('/?activetab=todo')
+
 
 class TaskStop(webapp.RequestHandler):
 	@oauth_decorator.oauth_aware
@@ -292,15 +306,17 @@ class TaskStop(webapp.RequestHandler):
 			now = datetime.datetime.now(EET())
 			event = gcal_service.events().get(calendarId=atividades_cal, eventId=task.eventId).execute(http=http)
 			event['end'] = {
-	         'dateTime': now.strftime(gcal_timeformat),
-	         'timeZone': 'Europe/Helsinki'
-         }
-			updated_event = gcal_service.events().update(calendarId=atividades_cal, eventId=task.eventId, body=event).execute(http=http)
+			'dateTime': now.strftime(gcal_timeformat),
+			'timeZone': 'Europe/Helsinki'
+			}
+			updated_event = gcal_service.events().update(calendarId=atividades_cal, eventId=task.eventId,
+			                                             body=event).execute(http=http)
 
 		task.done = True
 		task.datedone = datetime.datetime.now(EET())
 		task.put()
 		self.redirect('/?activetab=todo')
+
 
 class TaskDeleter(webapp.RequestHandler):
 	def post(self):
@@ -309,25 +325,26 @@ class TaskDeleter(webapp.RequestHandler):
 		task.delete()
 		self.redirect('/?activetab=todo')
 
+
 class Eversticky(webapp.RequestHandler):
 	def get(self):
 		self.response.headers['Content-Type'] = 'text/plain'
 		tasks = db.GqlQuery("SELECT * "
-		         "FROM Task "
-		         "WHERE done = FALSE "
-		         "ORDER BY date DESC")
-		logging.info('tasks %s'%tasks)
+		                    "FROM Task "
+		                    "WHERE done = FALSE "
+		                    "ORDER BY date DESC")
+		logging.info('tasks %s' % tasks)
 		lines = []
 		for task in tasks:
 			lines.append(task.text)
 		self.response.out.write('\n'.join(lines))
 
+
 class BillInserter(webapp.RequestHandler):
 	def post(self):
 		bill = Bill()
-
 		moneystr = self.request.get('bill-money')
-		moneystr = moneystr.replace(',','.')
+		moneystr = moneystr.replace(',', '.')
 		bill.money = float(moneystr)
 		#bill.cents = str(int(abs(round(asd*100))%100)) # Not necessary anymore, just for info
 		bill.category = BillCategory.get(self.request.get('bill-category'))
@@ -336,12 +353,14 @@ class BillInserter(webapp.RequestHandler):
 		bill.put()
 		self.redirect('/?activetab=bills')
 
+
 class BillDeleter(webapp.RequestHandler):
 	def post(self):
 		billid = int(self.request.get('billid'))
 		bill = Bill.get_by_id(billid)
 		bill.delete()
 		self.redirect('/?activetab=bills')
+
 
 class WishInserter(webapp.RequestHandler):
 	def post(self):
@@ -353,6 +372,7 @@ class WishInserter(webapp.RequestHandler):
 		wish.put()
 		self.redirect('/?activetab=tobuy')
 
+
 class WishDeleter(webapp.RequestHandler):
 	def post(self):
 		wishid = int(self.request.get('wishid'))
@@ -360,24 +380,25 @@ class WishDeleter(webapp.RequestHandler):
 		wish.delete()
 		self.redirect('/?activetab=tobuy')
 
+
 app = webapp.WSGIApplication([
-	('/', MainPage),
-	(oauth_decorator.callback_path, oauth_decorator.callback_handler()),
-	('/statistics', ViewStatistics),
-	('/_statistics', Statistics),
+     ('/', MainPage),
+     (oauth_decorator.callback_path, oauth_decorator.callback_handler()),
+     ('/statistics', ViewStatistics),
+     ('/_statistics', Statistics),
 
-	('/insertTask', TaskInserter),
-	('/playTask', TaskPlay),
-	('/stopTask', TaskStop),
-	('/deleteTask', TaskDeleter),
+     ('/insertTask', TaskInserter),
+     ('/playTask', TaskPlay),
+     ('/stopTask', TaskStop),
+     ('/deleteTask', TaskDeleter),
 
-	('/insertBill', BillInserter),
-	('/deleteBill', BillDeleter),
+     ('/insertBill', BillInserter),
+     ('/deleteBill', BillDeleter),
 
-	('/insertWish', WishInserter),
-	('/deleteWish', WishDeleter),
+     ('/insertWish', WishInserter),
+     ('/deleteWish', WishDeleter),
 
-	('/eversticky', Eversticky),
-	],
-	debug=True)
+     ('/eversticky', Eversticky),
+     ],
+  debug=True)
 

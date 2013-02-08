@@ -36,15 +36,18 @@
       return $("input[name=bill-method]").val($("#bill-method").find("button.active").text().trim());
     });
     drawChart = function(data) {
-      var chart, data2, options;
-      console.log(data);
-      data2 = google.visualization.arrayToDataTable(data);
-      options = {
-        title: "Expenses"
-      };
+      var chart, formatter, options;
+      data.unshift(['Category', 'Total expenses']);
+      data = google.visualization.arrayToDataTable(data);
+      formatter = new google.visualization.NumberFormat({
+        suffix: ' EUR',
+        fractionDigits: 2
+      });
+      formatter.format(data, 1);
+      options = {};
       $("#chart").html("");
       chart = new google.visualization.PieChart(document.getElementById('chart'));
-      return chart.draw(data2, options);
+      return chart.draw(data, options);
     };
     loadData = function() {
       return $.post('/_statistics', function(data) {

@@ -25,7 +25,7 @@
 - TODO NEW Statistics page
 	+ DONE Use AJAX requesting _statistics data for javascript
 	+ DONE Truncate expenses sum to 2 decimals
-	- TODO Pie chart shows currency (EUR)
+	+ DONE Pie chart shows currency (EUR)
 	- TODO Show also a normal list of category expenses
 - TODO NEW Urgent flag for tasks
 - TODO NEW Task reminders by email
