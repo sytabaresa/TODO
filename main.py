@@ -165,9 +165,6 @@ class MainPage(webapp.RequestHandler):
 		'user_link': user_link,
 		}
 
-		# In case you want to load categories data to local database
-		#BillCategory.loadCategoriesFromFile()
-
 		template = jinja_environment.get_template('templates/index.html')
 		self.response.out.write(template.render(template_values))
 
@@ -185,59 +182,81 @@ class ViewStatistics(webapp.RequestHandler):
 				self.response.status = 403
 				self.response.out.write("Sorry, you are not allowed")
 				return
+
+		template_values = {
+		   'expenses': getExpensesStatistics(),
+			'total_earned': getTotalEarned(),
+			'total_spent': getTotalSpent(),
+		}
 		template = jinja_environment.get_template('templates/statistics.html')
-		self.response.out.write(template.render({}))
+		self.response.out.write(template.render(template_values))
 
+def getTotalSpent():
+	this_year = datetime.datetime.now().year
+	this_month = datetime.datetime.now().month
+	bills = db.GqlQuery("SELECT * "
+                      "FROM Bill "
+                      "WHERE date >= DATETIME('" + str(this_year) + "-" + str(this_month) + "-01 00:00:00') "
+                                                                                            "ORDER BY date DESC")
+	sum = 0
+	for bill in bills:
+		if bill.money < 0:
+			sum += abs(bill.money)
+	return sum
 
-class Statistics(webapp.RequestHandler):
-	@oauth_decorator.oauth_required
-	def post(self):
-		http = None
-		user = None
-		if use_google_auth:
-		# Get the authorized Http object created by the decorator
-			http = oauth_decorator.http()
-			user  = users.get_current_user()
-			if user.email() not in allowed_users:
-				self.response.status = 403
-				self.response.out.write("Sorry, you are not allowed")
-				return
+def getTotalEarned():
+	this_year = datetime.datetime.now().year
+	this_month = datetime.datetime.now().month
+	bills = db.GqlQuery("SELECT * "
+	                    "FROM Bill "
+	                    "WHERE date >= DATETIME('" + str(this_year) + "-" + str(this_month) + "-01 00:00:00') "
+	                                                                                          "ORDER BY date DESC")
+	sum = 0
+	for bill in bills:
+		if bill.money > 0:
+			sum += abs(bill.money)
+	return sum
 
-			# In case you want to load data to local database
-			#		BillCategory.loadCategoriesFromFile()
-			#		Bill.loadSampleBillsFromFile()
+def getExpensesStatistics():
+	this_year = datetime.datetime.now().year
+	this_month = datetime.datetime.now().month
+	categories = db.GqlQuery("SELECT * FROM BillCategory")
+	bills = db.GqlQuery("SELECT * "
+	                    "FROM Bill "
+	                    "WHERE date >= DATETIME('" + str(this_year) + "-" + str(this_month) + "-01 00:00:00') "
+	                                                                                          "ORDER BY date DESC")
+	categories_expenses = {}
+	for cat in categories:
+		categories_expenses[cat.title] = []
+	for bill in bills:
+		categories_expenses[bill.category.title].append(bill)
+	for cat in categories:
+		if isinstance(categories_expenses[cat.title], list):
+			sum = 0
+			for bill in categories_expenses[cat.title]:
+				if bill.money < 0:
+					sum += abs(bill.money)
+			categories_expenses[cat.title] = sum
 
-		this_year = datetime.datetime.now().year
-		this_month = datetime.datetime.now().month
-		categories = db.GqlQuery("SELECT * FROM BillCategory")
-		bills = db.GqlQuery("SELECT * "
-		                    "FROM Bill "
-		                    "WHERE date >= DATETIME('" + str(this_year) + "-" + str(this_month) + "-01 00:00:00') "
-		                                                                                          "ORDER BY date DESC")
-		categories_expenses = {}
-		for cat in categories:
-			categories_expenses[cat.title] = []
-		for bill in bills:
-			categories_expenses[bill.category.title].append(bill)
-		for cat in categories:
-			if isinstance(categories_expenses[cat.title], list):
-				sum = 0
-				for bill in categories_expenses[cat.title]:
-					if bill.money < 0:
-						sum += abs(bill.money)
-				categories_expenses[cat.title] = sum
+	expenses = sorted(categories_expenses, key=categories_expenses.get)
+	for i in xrange(len(expenses)):
+		expenses[i] = [expenses[i], float(int(categories_expenses[expenses[i]] * 100)) / 100.0]
+	expenses.reverse()
 
-		expenses = sorted(categories_expenses, key=categories_expenses.get)
-		for i in xrange(len(expenses)):
-			expenses[i] = [expenses[i], float(int(categories_expenses[expenses[i]] * 100)) / 100.0]
-		expenses.reverse()
+	while expenses[-1][1] == 0:
+		expenses.pop()
 
-		while expenses[-1][1] == 0:
-			expenses.pop()
+	data = simplejson.dumps(expenses)
+	return data
 
-		data = simplejson.dumps(expenses)
+class LoadLocalData(webapp.RequestHandler):
+	def get(self):
+		# In case you want to load data to local database
+		BillCategory.loadCategoriesFromFile()
+		Bill.loadSampleBillsFromFile()
+
 		self.response.headers['Content-Type'] = 'application/json'
-		self.response.out.write(data)
+		self.response.out.write(getExpensesStatistics())
 
 
 class TaskInserter(webapp.RequestHandler):
@@ -382,23 +401,23 @@ class WishDeleter(webapp.RequestHandler):
 
 
 app = webapp.WSGIApplication([
-     ('/', MainPage),
-     (oauth_decorator.callback_path, oauth_decorator.callback_handler()),
-     ('/statistics', ViewStatistics),
-     ('/_statistics', Statistics),
+	                             ('/', MainPage),
+	                             (oauth_decorator.callback_path, oauth_decorator.callback_handler()),
+	                             ('/statistics', ViewStatistics),
+	                             ('/loadlocaldata', LoadLocalData),
 
-     ('/insertTask', TaskInserter),
-     ('/playTask', TaskPlay),
-     ('/stopTask', TaskStop),
-     ('/deleteTask', TaskDeleter),
+	                             ('/insertTask', TaskInserter),
+	                             ('/playTask', TaskPlay),
+	                             ('/stopTask', TaskStop),
+	                             ('/deleteTask', TaskDeleter),
 
-     ('/insertBill', BillInserter),
-     ('/deleteBill', BillDeleter),
+	                             ('/insertBill', BillInserter),
+	                             ('/deleteBill', BillDeleter),
 
-     ('/insertWish', WishInserter),
-     ('/deleteWish', WishDeleter),
+	                             ('/insertWish', WishInserter),
+	                             ('/deleteWish', WishDeleter),
 
-     ('/eversticky', Eversticky),
-     ],
-  debug=True)
+	                             ('/eversticky', Eversticky),
+	                             ],
+                             debug=True)
 

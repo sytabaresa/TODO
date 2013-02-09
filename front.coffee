@@ -37,22 +37,30 @@ $ ->
 		$("input[name=bill-method]").val( $("#bill-method").find("button.active").text().trim() )
 
 	drawChart = (data) ->
-		data.unshift(['Category', 'Total expenses'])
-		data = google.visualization.arrayToDataTable(data)
+		chartData = data
+		chartData.unshift(['Category', 'Total expenses'])
+		chartData = google.visualization.arrayToDataTable(chartData)
 		formatter = new google.visualization.NumberFormat({suffix: ' EUR', fractionDigits: 2})
-		formatter.format(data, 1)
+		formatter.format(chartData, 1)
 		options = {
 			#title: "Expenses"
 		}
 		$("#chart").html("")
 		chart = new google.visualization.PieChart(document.getElementById('chart'))
-		chart.draw(data, options)
+		chart.draw(chartData, options)
 
 	loadData = ->
-		$.post('/_statistics', (data) ->
-			drawChart(data)
-		)
+		drawChart(expenses)
+		expenses.shift(0)
+		for category in expenses
+			row = "<tr><td>"+category[0]+"</td><td>"+category[1]+"€</td></td>"
+			$("#expenses-table").append(row)
 
-	google.setOnLoadCallback(loadData)
+#		$.post('/_statistics', (data) ->
+#			drawChart(data)
+#		)
+
+	if $("body.statistics").length > 0
+		google.setOnLoadCallback(loadData)
 
 	return false

@@ -36,25 +36,35 @@
       return $("input[name=bill-method]").val($("#bill-method").find("button.active").text().trim());
     });
     drawChart = function(data) {
-      var chart, formatter, options;
-      data.unshift(['Category', 'Total expenses']);
-      data = google.visualization.arrayToDataTable(data);
+      var chart, chartData, formatter, options;
+      chartData = data;
+      chartData.unshift(['Category', 'Total expenses']);
+      chartData = google.visualization.arrayToDataTable(chartData);
       formatter = new google.visualization.NumberFormat({
         suffix: ' EUR',
         fractionDigits: 2
       });
-      formatter.format(data, 1);
+      formatter.format(chartData, 1);
       options = {};
       $("#chart").html("");
       chart = new google.visualization.PieChart(document.getElementById('chart'));
-      return chart.draw(data, options);
+      return chart.draw(chartData, options);
     };
     loadData = function() {
-      return $.post('/_statistics', function(data) {
-        return drawChart(data);
-      });
+      var category, row, _j, _len, _results;
+      drawChart(expenses);
+      expenses.shift(0);
+      _results = [];
+      for (_j = 0, _len = expenses.length; _j < _len; _j++) {
+        category = expenses[_j];
+        row = "<tr><td>" + category[0] + "</td><td>" + category[1] + "€</td></td>";
+        _results.push($("#expenses-table").append(row));
+      }
+      return _results;
     };
-    google.setOnLoadCallback(loadData);
+    if ($("body.statistics").length > 0) {
+      google.setOnLoadCallback(loadData);
+    }
     return false;
   });
 

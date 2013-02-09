@@ -122,11 +122,11 @@ button#save-bill {
 	width: 100%;
 }
 
-td.bill-value-col > strong.negative {
+strong.negative {
 	color: #e27000;
 }
 
-td.bill-value-col > strong.positive {
+strong.positive {
 	color: #22a200;
 }
 
