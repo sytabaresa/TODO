@@ -27,8 +27,9 @@
 	+ DONE Truncate expenses sum to 2 decimals
 	+ DONE Pie chart shows currency (EUR)
 	+ DONE Show also a normal list of category expenses
-	- TODO Only the Finances tab shows links to Statistics, better style
-	- TODO Show links to statistics of 3 previous months 
+	+ DONE FIXBUG List of expenses showed .01 cents as .1
+	+ DONE Only the Finances tab shows links to Statistics, better style
+	- TODO Links to statistics of 3 previous months 
 - TODO Separate Shopping and Tasks as independent apps
 - TODO NEW Urgent flag for tasks
 - TODO NEW Task reminders by email

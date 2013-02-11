@@ -106,18 +106,18 @@ class Wish(db.Model):
 
 
 class MainPage(webapp.RequestHandler):
-	@oauth_decorator.oauth_required
+	#@oauth_decorator.oauth_required
 	def get(self):
 		http = None
 		user = None
-		if use_google_auth:
+	#	if use_google_auth:
 			# Get the authorized Http object created by the decorator
-			http = oauth_decorator.http()
-			user = users.get_current_user()
-			if user.email() not in allowed_users:
-				self.response.status = 403
-				self.response.out.write("Sorry, you are not allowed")
-				return
+	#		http = oauth_decorator.http()
+	#		user = users.get_current_user()
+	#		if user.email() not in allowed_users:
+	#			self.response.status = 403
+	#			self.response.out.write("Sorry, you are not allowed")
+	#			return
 
 		tasks = db.GqlQuery("SELECT * "
 		                    "FROM Task "

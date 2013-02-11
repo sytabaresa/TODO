@@ -110,7 +110,8 @@
 	                 {% set cents2 = cents1|round|abs %}
 	                 {% set cents3 = cents2%100 %}
 	                 {% set cents4 = cents3|int|string %}
-                  {% if bill.money > 0 %}+{% endif %}<span class="big">{{ bill.money|int }}</span>.{{ cents4 }} &#8364;
+	                 {% if cents4|length == 1 %}{% set cents5 = '0'+cents4 %}{% else %}{% set cents5 = cents4 %}{% endif %}
+                  {% if bill.money > 0 %}+{% endif %}<span class="big">{{ bill.money|int }}</span>.{{ cents5 }} &#8364;
                 </strong>
                 <img src="/static/img/{{ bill.method|lower }}.png" class="bill-method-icon" />
 	              <span class="muted">{{ bill.formattedDate() }}</span>
@@ -126,7 +127,9 @@
             </tr>
           {% endfor %}
         </table>
-      </div>
+      
+			<p class="lead"><a href="/statistics">Statistics this month</a></p>	
+		</div>
 
 	    {# ------------- To buy -------------- #}
       <div class="tab-pane{% if activetab == 'tobuy' %} active{% endif %}" id="tobuycontainer">
@@ -205,9 +208,6 @@
 				</table>
 			</div>
     </div>
-
-		<a class="btn" href="/statistics">Statistics</a>
-		<br />
 
 		{% if user %}
 			Hi {{ user.nickname() }}. <a href="{{ user_link }}">Log out</a>
