@@ -6,6 +6,7 @@ import jinja2
 import os
 import logging
 import datetime
+import calendar
 
 jinja_environment = jinja2.Environment(
 	loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
@@ -25,10 +26,24 @@ oauth_decorator = OAuth2Decorator(
 gcal_service = build('calendar', 'v3')
 gcal_timeformat = "%Y-%m-%dT%H:%M:%S"
 
-
 def myFormatDate(date):
 	return date.strftime('%d.%m.%Y')
 
+def getFirstDayGQLstr(a_datetime):
+	first_day_month = datetime.datetime(day=1, month=a_datetime.month, year=a_datetime.year)
+	return first_day_month.strftime('%Y-%m-%d 00:00:00')
+
+def getLastDayGQLstr(a_datetime):
+	last_day_month = datetime.datetime(day=calendar.monthrange(a_datetime.year, a_datetime.month)[1], month=a_datetime.month, year=a_datetime.year)
+	return last_day_month.strftime('%Y-%m-%d 23:59:59')	
+
+def getSomedayPreviousMonth(a_datetime, month_offset):
+	someday = a_datetime
+	i = month_offset
+	while i > 0:
+		someday = datetime.datetime(day=1, month=someday.month, year=someday.year) - datetime.timedelta(days=1)
+		i -= 1
+	return someday 
 
 def userForbidden():
 	http = None
@@ -106,18 +121,18 @@ class Wish(db.Model):
 
 
 class MainPage(webapp.RequestHandler):
-	#@oauth_decorator.oauth_required
+	@oauth_decorator.oauth_required
 	def get(self):
 		http = None
 		user = None
-	#	if use_google_auth:
+		if use_google_auth:
 			# Get the authorized Http object created by the decorator
-	#		http = oauth_decorator.http()
-	#		user = users.get_current_user()
-	#		if user.email() not in allowed_users:
-	#			self.response.status = 403
-	#			self.response.out.write("Sorry, you are not allowed")
-	#			return
+			http = oauth_decorator.http()
+			user = users.get_current_user()
+			if user.email() not in allowed_users:
+				self.response.status = 403
+				self.response.out.write("Sorry, you are not allowed")
+				return
 
 		tasks = db.GqlQuery("SELECT * "
 		                    "FROM Task "
@@ -171,7 +186,7 @@ class MainPage(webapp.RequestHandler):
 
 class ViewStatistics(webapp.RequestHandler):
 	@oauth_decorator.oauth_required
-	def get(self):
+	def get(self, month_offset):
 		http = None
 		user = None
 		if use_google_auth:
@@ -182,49 +197,48 @@ class ViewStatistics(webapp.RequestHandler):
 				self.response.status = 403
 				self.response.out.write("Sorry, you are not allowed")
 				return
-
+	
+		month_offset = int(month_offset)	
+		title = getSomedayPreviousMonth(datetime.datetime.now(), month_offset).strftime('%B %Y')
 		template_values = {
-		   'expenses': getExpensesStatistics(),
-			'total_earned': getTotalEarned(),
-			'total_spent': getTotalSpent(),
+			'title': title,
+		   'expenses': getExpensesStatistics(month_offset),
+			'total_earned': getTotalEarned(month_offset),
+			'total_spent': getTotalSpent(month_offset),
 		}
 		template = jinja_environment.get_template('templates/statistics.html')
 		self.response.out.write(template.render(template_values))
 
-def getTotalSpent():
-	this_year = datetime.datetime.now().year
-	this_month = datetime.datetime.now().month
+def getBillsOfMonth(someday_month):
 	bills = db.GqlQuery("SELECT * "
                       "FROM Bill "
-                      "WHERE date >= DATETIME('" + str(this_year) + "-" + str(this_month) + "-01 00:00:00') "
-                                                                                            "ORDER BY date DESC")
+                      "WHERE date >= DATETIME('" +getFirstDayGQLstr(someday_month)+"') "
+							 "AND date <= DATETIME('"+ getLastDayGQLstr(someday_month)+"') "
+                      "ORDER BY date DESC")
+	return bills
+
+def getTotalSpent(month_offset):
+	month = getSomedayPreviousMonth(datetime.datetime.now(), month_offset)
+	bills = getBillsOfMonth(month)
 	sum = 0
 	for bill in bills:
 		if bill.money < 0:
 			sum += abs(bill.money)
 	return sum
 
-def getTotalEarned():
-	this_year = datetime.datetime.now().year
-	this_month = datetime.datetime.now().month
-	bills = db.GqlQuery("SELECT * "
-	                    "FROM Bill "
-	                    "WHERE date >= DATETIME('" + str(this_year) + "-" + str(this_month) + "-01 00:00:00') "
-	                                                                                          "ORDER BY date DESC")
+def getTotalEarned(month_offset):
+	month = getSomedayPreviousMonth(datetime.datetime.now(), month_offset)
+	bills = getBillsOfMonth(month)
 	sum = 0
 	for bill in bills:
 		if bill.money > 0:
 			sum += abs(bill.money)
 	return sum
 
-def getExpensesStatistics():
-	this_year = datetime.datetime.now().year
-	this_month = datetime.datetime.now().month
+def getExpensesStatistics(month_offset):
+	month = getSomedayPreviousMonth(datetime.datetime.now(), month_offset)
 	categories = db.GqlQuery("SELECT * FROM BillCategory")
-	bills = db.GqlQuery("SELECT * "
-	                    "FROM Bill "
-	                    "WHERE date >= DATETIME('" + str(this_year) + "-" + str(this_month) + "-01 00:00:00') "
-	                                                                                          "ORDER BY date DESC")
+	bills = getBillsOfMonth(month)
 	categories_expenses = {}
 	for cat in categories:
 		categories_expenses[cat.title] = []
@@ -256,7 +270,7 @@ class LoadLocalData(webapp.RequestHandler):
 		Bill.loadSampleBillsFromFile()
 
 		self.response.headers['Content-Type'] = 'application/json'
-		self.response.out.write(getExpensesStatistics())
+		self.response.out.write(getExpensesStatistics(0))
 
 
 class TaskInserter(webapp.RequestHandler):
@@ -403,7 +417,7 @@ class WishDeleter(webapp.RequestHandler):
 app = webapp.WSGIApplication([
 	                             ('/', MainPage),
 	                             (oauth_decorator.callback_path, oauth_decorator.callback_handler()),
-	                             ('/statistics', ViewStatistics),
+	                             ('/statistics/(\d+)', ViewStatistics),
 	                             ('/loadlocaldata', LoadLocalData),
 
 	                             ('/insertTask', TaskInserter),
