@@ -30,7 +30,7 @@
 	+ DONE FIXBUG List of expenses showed .01 cents as .1
 	+ DONE Only the Finances tab shows links to Statistics, better style
 	+ DONE Links to statistics of 3 previous months 
-- TODO IMPROVE Better format of numbers (always show cents, maybe make noncents bolder?) in statistics table of expenses
++ DONE IMPROVE Better format of numbers in statistics table of expenses
 - TODO Separate Shopping and Tasks as independent apps
 - TODO NEW Urgent flag for tasks
 - TODO NEW Task reminders by email

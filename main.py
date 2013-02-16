@@ -14,7 +14,7 @@ jinja_environment = jinja2.Environment(
 from oauth2client.appengine import OAuth2Decorator
 from apiclient.discovery import build
 
-use_google_auth = True
+use_google_auth = False 
 allowed_users = ['andre.staltz@gmail.com', 'mesituominen@gmail.com', 'mesi.tuominen@gmail.com',
                  'mesimedeiros@gmail.com']
 atividades_cal = '862ukq5llt4v0i9t6bl8shv8e0@group.calendar.google.com'
@@ -121,7 +121,7 @@ class Wish(db.Model):
 
 
 class MainPage(webapp.RequestHandler):
-	@oauth_decorator.oauth_required
+	#@oauth_decorator.oauth_required
 	def get(self):
 		http = None
 		user = None
@@ -185,7 +185,7 @@ class MainPage(webapp.RequestHandler):
 
 
 class ViewStatistics(webapp.RequestHandler):
-	@oauth_decorator.oauth_required
+	#@oauth_decorator.oauth_required
 	def get(self, month_offset):
 		http = None
 		user = None

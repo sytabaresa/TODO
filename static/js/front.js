@@ -57,7 +57,7 @@
       _results = [];
       for (_j = 0, _len = expenses.length; _j < _len; _j++) {
         category = expenses[_j];
-        row = "<tr><td>" + category[0] + "</td><td>" + category[1] + "€</td></td>";
+        row = "<tr><td>" + category[0] + "</td><td><strong class='negative'>" + parseFloat(category[1]).toFixed(2) + "€</strong></td></td>";
         _results.push($("#expenses-table").append(row));
       }
       return _results;

@@ -53,12 +53,8 @@ $ ->
 		drawChart(expenses)
 		expenses.shift(0)
 		for category in expenses
-			row = "<tr><td>"+category[0]+"</td><td>"+category[1]+"€</td></td>"
+			row = "<tr><td>"+category[0]+"</td><td><strong class='negative'>"+parseFloat(category[1]).toFixed(2)+"€</strong></td></td>"
 			$("#expenses-table").append(row)
-
-#		$.post('/_statistics', (data) ->
-#			drawChart(data)
-#		)
 
 	if $("body.statistics").length > 0
 		google.setOnLoadCallback(loadData)
