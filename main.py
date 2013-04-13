@@ -55,21 +55,6 @@ def userForbidden():
 			return True
 	return False
 
-
-class Task(db.Model):
-	"""Something to do"""
-	text = db.StringProperty()
-	date = db.DateTimeProperty(auto_now_add=True)
-	dateplay = db.DateTimeProperty()
-	datedone = db.DateTimeProperty()
-	playing = db.BooleanProperty(default=False)
-	done = db.BooleanProperty(default=False)
-	eventId = db.StringProperty()
-
-	def formattedDateDone(self):
-		return myFormatDate(self.datedone)
-
-
 class BillCategory(db.Model):
 	"""A category of expenses"""
 	title = db.StringProperty()
@@ -113,13 +98,6 @@ class Bill(db.Model):
 			newBill.category = category
 			newBill.put()
 
-
-class Wish(db.Model):
-	"""Something I should buy"""
-	description = db.StringProperty()
-	reference = db.StringProperty()
-
-
 class MainPage(webapp.RequestHandler):
 	#@oauth_decorator.oauth_required
 	def get(self):
@@ -134,22 +112,12 @@ class MainPage(webapp.RequestHandler):
 				self.response.out.write("Sorry, you are not allowed")
 				return
 
-		tasks = db.GqlQuery("SELECT * "
-		                    "FROM Task "
-		                    "WHERE done = FALSE "
-		                    "ORDER BY date DESC")
-		done = db.GqlQuery("SELECT * "
-		                   "FROM Task "
-		                   "WHERE done = TRUE "
-		                   "ORDER BY date DESC LIMIT 4")
 		this_year = datetime.datetime.now().year
 		this_month = datetime.datetime.now().month
 		bills = db.GqlQuery("SELECT * "
 		                    "FROM Bill "
 		                    "WHERE date >= DATETIME('" + str(this_year) + "-" + str(this_month) + "-01 00:00:00') "
-		                                                                                          "ORDER BY date DESC")
-		wishes = db.GqlQuery("SELECT * "
-		                     "FROM Wish")
+																								  "ORDER BY date DESC")		
 		categories = db.GqlQuery("SELECT * "
 		                         "FROM BillCategory "
 		                         "ORDER BY display_order")
@@ -159,23 +127,14 @@ class MainPage(webapp.RequestHandler):
 			if bill.money < 0 and bill.date.month == datetime.datetime.now().month:
 				this_month_expenses += abs(bill.money)
 
-		activetab = self.request.get('activetab')
-		if not activetab:
-			activetab = 'bills'
-		#logging.info('activetab %s'%activetab)
-
 		user_link = None
 		if use_google_auth:
 			user_link = users.create_logout_url('/') if user else users.create_login_url('/')
 
 		template_values = {
-		'tasks': tasks,
-		'done': done,
 		'bills': bills,
 		'categories': categories,
-		'wishes': wishes,
 		'this_month_expenses': this_month_expenses,
-		'activetab': activetab,
 		'user': user,
 		'user_link': user_link,
 		}
@@ -273,104 +232,12 @@ class LoadLocalData(webapp.RequestHandler):
 		self.response.out.write(getExpensesStatistics(0))
 
 
-class TaskInserter(webapp.RequestHandler):
-	def post(self):
-		task = Task()
-		task.text = self.request.get('tasktext')
-		task.put()
-		self.redirect('/?activetab=todo')
-
-
 class EET(datetime.tzinfo):
 	def utcoffset(self, dt):
 		return datetime.timedelta(hours=2)
 
 	def dst(self, dt):
 		return datetime.timedelta(0)
-
-
-class TaskPlay(webapp.RequestHandler):
-	@oauth_decorator.oauth_aware
-	def post(self):
-		http = None
-		if use_google_auth:
-			http = oauth_decorator.http()
-
-		taskid = int(self.request.get('taskid'))
-		task = Task.get_by_id(taskid)
-
-		now = datetime.datetime.now(EET())
-		later = now + datetime.timedelta(0, 900)
-
-		event = {
-		'kind': 'calendar#event',
-		'summary': task.text,
-		'start': {
-		'dateTime': now.strftime(gcal_timeformat),
-		'timeZone': 'Europe/Helsinki'
-		},
-		'end': {
-		'dateTime': later.strftime(gcal_timeformat),
-		'timeZone': 'Europe/Helsinki'
-		},
-		}
-
-		if use_google_auth:
-			created_event = gcal_service.events().insert(calendarId=atividades_cal, body=event).execute(http=http)
-			task.eventId = created_event['id']
-
-		task.playing = True
-		task.dateplay = datetime.datetime.now(EET())
-		task.put()
-		self.redirect('/?activetab=todo')
-
-
-class TaskStop(webapp.RequestHandler):
-	@oauth_decorator.oauth_aware
-	def post(self):
-		http = None
-		if use_google_auth:
-			http = oauth_decorator.http()
-
-		taskid = int(self.request.get('taskid'))
-		task = Task.get_by_id(taskid)
-
-		if use_google_auth:
-			now = datetime.datetime.now(EET())
-			event = gcal_service.events().get(calendarId=atividades_cal, eventId=task.eventId).execute(http=http)
-			event['end'] = {
-			'dateTime': now.strftime(gcal_timeformat),
-			'timeZone': 'Europe/Helsinki'
-			}
-			updated_event = gcal_service.events().update(calendarId=atividades_cal, eventId=task.eventId,
-			                                             body=event).execute(http=http)
-
-		task.done = True
-		task.datedone = datetime.datetime.now(EET())
-		task.put()
-		self.redirect('/?activetab=todo')
-
-
-class TaskDeleter(webapp.RequestHandler):
-	def post(self):
-		taskid = int(self.request.get('taskid'))
-		task = Task.get_by_id(taskid)
-		task.delete()
-		self.redirect('/?activetab=todo')
-
-
-class Eversticky(webapp.RequestHandler):
-	def get(self):
-		self.response.headers['Content-Type'] = 'text/plain'
-		tasks = db.GqlQuery("SELECT * "
-		                    "FROM Task "
-		                    "WHERE done = FALSE "
-		                    "ORDER BY date DESC")
-		logging.info('tasks %s' % tasks)
-		lines = []
-		for task in tasks:
-			lines.append(task.text)
-		self.response.out.write('\n'.join(lines))
 
 
 class BillInserter(webapp.RequestHandler):
@@ -384,7 +251,7 @@ class BillInserter(webapp.RequestHandler):
 		bill.description = self.request.get('bill-description')
 		bill.method = self.request.get('bill-method')
 		bill.put()
-		self.redirect('/?activetab=bills')
+		self.redirect('/')
 
 
 class BillDeleter(webapp.RequestHandler):
@@ -392,26 +259,7 @@ class BillDeleter(webapp.RequestHandler):
 		billid = int(self.request.get('billid'))
 		bill = Bill.get_by_id(billid)
 		bill.delete()
-		self.redirect('/?activetab=bills')
-
-
-class WishInserter(webapp.RequestHandler):
-	def post(self):
-		wish = Wish()
-		wish.description = self.request.get('wishdescription')
-		wishref = self.request.get('wishreference')
-		if wishref:
-			wish.reference = wishref
-		wish.put()
-		self.redirect('/?activetab=tobuy')
-
-
-class WishDeleter(webapp.RequestHandler):
-	def post(self):
-		wishid = int(self.request.get('wishid'))
-		wish = Wish.get_by_id(wishid)
-		wish.delete()
-		self.redirect('/?activetab=tobuy')
+		self.redirect('/')
 
 
 app = webapp.WSGIApplication([
@@ -420,18 +268,9 @@ app = webapp.WSGIApplication([
 	                             ('/statistics/(\d+)', ViewStatistics),
 	                             ('/loadlocaldata', LoadLocalData),
 
-	                             ('/insertTask', TaskInserter),
-	                             ('/playTask', TaskPlay),
-	                             ('/stopTask', TaskStop),
-	                             ('/deleteTask', TaskDeleter),
-
 	                             ('/insertBill', BillInserter),
 	                             ('/deleteBill', BillDeleter),
 
-	                             ('/insertWish', WishInserter),
-	                             ('/deleteWish', WishDeleter),
-
-	                             ('/eversticky', Eversticky),
 	                             ],
                              debug=True)
 
